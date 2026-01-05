@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  name                  String
+  studentNumber         String?
+  department            String?
+  program              String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  organization          Organization?
+  logEntries           LogEntry[]
+  monthlyReports       MonthlyReport[]
+  finalReport          FinalReport?
+  project              Project?
+  githubIntegration    GithubIntegration?
+}
+
+model Organization {
+  id          String    @id @default(cuid())
+  studentId   String    @unique
+  name        String
+  address     String?
+  startDate   DateTime
+  endDate     DateTime?
+  supervisor  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model LogEntry {
+  id          String   @id @default(cuid())
+  studentId   String
+  date        DateTime
+  time        String?
+  activity    String
+  skills      String?
+  challenges  String?
+  solutions   String?
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, date])
+}
+
+model MonthlyReport {
+  id                String   @id @default(cuid())
+  studentId         String
+  month             String
+  year              String
+  summary           String
+  duties            String
+  problems          String
+  analysis          String
+  conclusion        String
+  previousMonth     String?
+  reportData        String?  // JSON for full report structure
+  status            String   @default("draft") // draft, completed
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, month, year])
+}
+
+model FinalReport {
+  id                    String   @id @default(cuid())
+  studentId             String   @unique
+  coverPage            String?
+  introduction          String?
+  companyBackground    String?
+  majorDuties         String?
+  majorChallenges      String?
+  suggestedSolutions   String?
+  mainBody            String?
+  detailedDuties       String?
+  challengesEncountered String?
+  problemProcedures    String?
+  alternatives         String?
+  skillsGained         String?
+  conclusions         String?
+  recommendations      String?
+  status              String   @default("draft")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id                    String   @id @default(cuid())
+  studentId             String   @unique
+  title                String?
+  chapter1Introduction  String?
+  chapter2Planning     String?
+  chapter3Analysis     String?
+  chapter4Design       String?
+  chapter5Implementation String?
+  appendixA            String?
+  appendixB            String?
+  appendixC            String?
+  status               String   @default("draft")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  student              Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model GithubIntegration {
+  id                String   @id @default(cuid())
+  studentId         String   @unique
+  githubToken       String?  // Encrypted token
+  repositoryUrl     String?
+  branch            String?  @default("main")
+  autoCommit        Boolean  @default(false)
+  lastSyncAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}

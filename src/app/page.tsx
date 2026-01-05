@@ -3,16 +3,19 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BookOpen, FileText, FolderTree, Github, Clipboard, Activity, BarChart3, Settings, User, Zap, Menu, X, Home } from 'lucide-react'
+import { BookOpen, FileText, FolderTree, Github, Clipboard, Activity, Settings, User, Zap, Menu, X, Home as HomeIcon } from 'lucide-react'
 import { LogEntryForm } from '@/components/LogEntryForm'
 import { MonthlyReportComponent } from '@/components/MonthlyReportComponent'
+import { FinalReportForm } from '@/components/FinalReportForm'
+import { ProjectForm } from '@/components/ProjectForm'
+import { GithubForm } from '@/components/GithubForm'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, color: 'text-violet-600' },
+    { id: 'dashboard', label: 'Dashboard', icon: HomeIcon, color: 'text-violet-600' },
     { id: 'logs', label: 'Log Sheets', icon: Clipboard, color: 'text-blue-600' },
     { id: 'monthly-reports', label: 'Monthly Reports', icon: FileText, color: 'text-emerald-600' },
     { id: 'final-report', label: 'Final Report', icon: FileText, color: 'text-amber-600' },
@@ -21,35 +24,30 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 shadow-xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:inset-0`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 shadow-xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white">
-                  AMS
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Attachment System
-                </p>
-              </div>
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
+                AMS
+              </h1>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="lg:hidden p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-3 space-y-1">
             {navigationItems.map((item) => {
               const Icon = item.icon
               const isActive = activeTab === item.id
@@ -60,35 +58,32 @@ export default function Home() {
                     setActiveTab(item.id)
                     setSidebarOpen(false)
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 ${
                     isActive
-                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-600/25'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-violet-600 text-white'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : item.color}`} />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.color}`} />
+                  <span className="text-sm font-medium">{item.label}</span>
                 </button>
               )
             })}
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700">
-              <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
+          <div className="p-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700">
+              <div className="w-6 h-6 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center">
+                <User className="w-3 h-3 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
                   Demo Student
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  demo@student.edu
-                </p>
               </div>
-              <button className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600">
-                <Settings className="w-4 h-4 text-slate-500" />
+              <button className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600">
+                <Settings className="w-3 h-3 text-slate-500" />
               </button>
             </div>
           </div>
@@ -104,33 +99,26 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Header */}
-        <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30">
-          <div className="px-6 py-4">
+        <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          <div className="px-4 py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                  className="lg:hidden p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-4 h-4" />
                 </button>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                    {navigationItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
-                  </h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Manage your industrial attachment activities
-                  </p>
-                </div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {navigationItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
+                </h2>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </Button>
-              </div>
+              <Button variant="outline" size="sm">
+                <Settings className="w-3 h-3 mr-1" />
+                Settings
+              </Button>
             </div>
           </div>
         </header>
@@ -151,168 +139,298 @@ export default function Home() {
 
 function DashboardContent() {
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 mb-4">
-          Welcome to Your Dashboard
-        </h2>
-        <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-          Manage your industrial attachment activities, generate AI-powered reports, and track your progress
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="group hover:shadow-xl transition-all border-2 border-violet-200 dark:border-violet-800 bg-white dark:bg-slate-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
-                <Clipboard className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors">
-                  Log Sheets
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Daily & weekly activity logging with skills tracking
+    <div className="space-y-6">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Logs</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">24</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
+                  <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1"></span>
+                  +12% from last week
                 </p>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full bg-violet-600 hover:bg-violet-700">
-              Start Logging
-            </Button>
+              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                <Clipboard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            {/* Mini chart */}
+            <div className="mt-4 flex items-end space-x-1 h-8">
+              {[4, 6, 8, 5, 9, 7, 12].map((height, i) => (
+                <div key={i} className="bg-blue-200 dark:bg-blue-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-xl transition-all border-2 border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
-                  Monthly Reports
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  AI-powered monthly reports generated from your logs
+        <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Reports</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">8</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
+                  <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1"></span>
+                  +3 this month
                 </p>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-              Generate Report
-            </Button>
+              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center">
+                <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+            {/* Mini chart */}
+            <div className="mt-4 flex items-end space-x-1 h-8">
+              {[2, 3, 1, 4, 2, 5, 8].map((height, i) => (
+                <div key={i} className="bg-emerald-200 dark:bg-emerald-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-xl transition-all border-2 border-amber-200 dark:border-amber-800 bg-white dark:bg-slate-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition-colors">
-                  Final Report
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Complete industrial attachment report with analysis
+        <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Projects</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">3</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center mt-1">
+                  <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1"></span>
+                  2 in progress
                 </p>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full bg-amber-600 hover:bg-amber-700">
-              Create Report
-            </Button>
+              <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
+                <FolderTree className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            {/* Progress rings */}
+            <div className="mt-4 flex space-x-2">
+              <div className="w-8 h-8 rounded-full border-2 border-amber-200 dark:border-amber-800 border-t-amber-500 dark:border-t-amber-400"></div>
+              <div className="w-8 h-8 rounded-full border-2 border-amber-200 dark:border-amber-800 border-t-amber-500 dark:border-t-amber-400 rotate-45"></div>
+              <div className="w-8 h-8 rounded-full border-2 border-amber-500 dark:border-amber-400"></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-xl transition-all border-2 border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                <FolderTree className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                  Project Docs
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Software engineering methodology documentation
+        <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Active</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">45</p>
+                <p className="text-xs text-violet-600 dark:text-violet-400 flex items-center mt-1">
+                  <span className="inline-block w-2 h-2 bg-violet-500 rounded-full mr-1"></span>
+                  89% attendance
                 </p>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              Start Project
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="group hover:shadow-xl transition-all border-2 border-slate-700 dark:border-slate-600 bg-white dark:bg-slate-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-slate-700 dark:bg-slate-600 rounded-xl flex items-center justify-center">
-                <Github className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-violet-600 dark:text-violet-400" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-slate-700 transition-colors">
-                  GitHub Integration
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Version control and automatic backups
-                </p>
+            </div>
+            {/* Circular progress */}
+            <div className="mt-4 flex justify-center">
+              <div className="relative w-12 h-12">
+                <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeDasharray="89, 100"
+                    className="text-violet-500 dark:text-violet-400"
+                  />
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-slate-200 dark:text-slate-700"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">89%</span>
+                </div>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full bg-slate-700 hover:bg-slate-800">
-              Connect
-            </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 shadow-xl border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-violet-600" />
-            Your Progress Overview
-          </CardTitle>
-          <CardDescription>
-            Track your industrial attachment journey and achievements
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity Chart */}
+        <Card className="border border-slate-200 dark:border-slate-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Weekly Activity</CardTitle>
+            <CardDescription className="text-sm text-slate-600 dark:text-slate-400">
+              Log entries over the past 7 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-48 flex items-end justify-between space-x-2">
+              {[
+                { day: 'Mon', value: 8, color: 'bg-blue-500' },
+                { day: 'Tue', value: 12, color: 'bg-blue-500' },
+                { day: 'Wed', value: 6, color: 'bg-blue-500' },
+                { day: 'Thu', value: 15, color: 'bg-blue-500' },
+                { day: 'Fri', value: 10, color: 'bg-blue-500' },
+                { day: 'Sat', value: 4, color: 'bg-blue-300' },
+                { day: 'Sun', value: 2, color: 'bg-blue-300' }
+              ].map((item, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center">
+                  <div 
+                    className={`w-full ${item.color} rounded-t-md transition-all hover:opacity-80`}
+                    style={{ height: `${item.value * 8}px` }}
+                  ></div>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 mt-2">{item.day}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Skills Progress */}
+        <Card className="border border-slate-200 dark:border-slate-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Skills Progress</CardTitle>
+            <CardDescription className="text-sm text-slate-600 dark:text-slate-400">
+              Development areas and competency levels
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0 space-y-4">
+            {[
+              { skill: 'Frontend Development', progress: 85, color: 'bg-blue-500' },
+              { skill: 'Backend Development', progress: 70, color: 'bg-emerald-500' },
+              { skill: 'Database Management', progress: 60, color: 'bg-amber-500' },
+              { skill: 'Project Management', progress: 45, color: 'bg-violet-500' },
+              { skill: 'Documentation', progress: 90, color: 'bg-rose-500' }
+            ].map((item, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.skill}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">{item.progress}%</span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                  <div 
+                    className={`${item.color} h-2 rounded-full transition-all duration-500`}
+                    style={{ width: `${item.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card className="border border-slate-200 dark:border-slate-700">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Quick Actions</CardTitle>
+          <CardDescription className="text-sm text-slate-600 dark:text-slate-400">
+            Common tasks and shortcuts
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center p-6 bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 rounded-2xl border border-violet-200 dark:border-violet-800">
-              <div className="text-4xl font-bold text-violet-600 mb-2">0</div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Log Entries</div>
-              <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">This week</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl border border-emerald-200 dark:border-emerald-800">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">0</div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Reports Generated</div>
-              <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">Total</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-2xl border border-amber-200 dark:border-amber-800">
-              <div className="text-4xl font-bold text-amber-600 mb-2">0%</div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Progress</div>
-              <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">Completion</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl border border-blue-200 dark:border-blue-800">
-              <div className="text-4xl font-bold text-blue-600 mb-2">0</div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Logged</div>
-              <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">This month</div>
-            </div>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950 group">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50">
+                <Clipboard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-slate-900 dark:text-white">New Log Entry</div>
+                <div className="text-xs text-slate-500">Record daily activities</div>
+              </div>
+            </Button>
+            
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-emerald-50 hover:border-emerald-200 dark:hover:bg-emerald-950 group">
+              <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50">
+                <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-slate-900 dark:text-white">Generate Report</div>
+                <div className="text-xs text-slate-500">Create monthly report</div>
+              </div>
+            </Button>
+            
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-amber-50 hover:border-amber-200 dark:hover:bg-amber-950 group">
+              <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/50">
+                <FolderTree className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-slate-900 dark:text-white">New Project</div>
+                <div className="text-xs text-slate-500">Start project documentation</div>
+              </div>
+            </Button>
+
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-violet-50 hover:border-violet-200 dark:hover:bg-violet-950 group">
+              <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-violet-200 dark:group-hover:bg-violet-800/50">
+                <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-slate-900 dark:text-white">AI Assistant</div>
+                <div className="text-xs text-slate-500">Get help with tasks</div>
+              </div>
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="border border-slate-200 dark:border-slate-700 lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-4">
+              {[
+                { action: 'Created log entry', time: '2 hours ago', type: 'log', icon: Clipboard, color: 'text-blue-600' },
+                { action: 'Generated monthly report', time: '1 day ago', type: 'report', icon: FileText, color: 'text-emerald-600' },
+                { action: 'Updated project documentation', time: '2 days ago', type: 'project', icon: FolderTree, color: 'text-amber-600' },
+                { action: 'Completed skill assessment', time: '3 days ago', type: 'skill', icon: Zap, color: 'text-violet-600' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                    <item.icon className={`w-4 h-4 ${item.color}`} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{item.action}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-slate-200 dark:border-slate-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Upcoming Tasks</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-3">
+              {[
+                { task: 'Submit weekly report', due: 'Tomorrow', priority: 'high' },
+                { task: 'Complete project milestone', due: 'In 3 days', priority: 'medium' },
+                { task: 'Update documentation', due: 'Next week', priority: 'low' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <div className={`w-2 h-2 rounded-full ${
+                    item.priority === 'high' ? 'bg-red-500' : 
+                    item.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{item.task}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.due}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -356,6 +474,8 @@ function MonthlyReportsContent() {
 }
 
 function FinalReportContent() {
+  const demoStudentId = 'demo-student-id'
+
   return (
     <div className="space-y-6">
       <div>
@@ -367,26 +487,14 @@ function FinalReportContent() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Final Report Builder</CardTitle>
-          <CardDescription>
-            Create your comprehensive industrial attachment final report
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-slate-500">
-            <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p>Final report builder will be implemented here</p>
-            <p className="text-sm">This will include all sections required for the final report</p>
-          </div>
-        </CardContent>
-      </Card>
+      <FinalReportForm studentId={demoStudentId} />
     </div>
   )
 }
 
 function ProjectContent() {
+  const demoStudentId = 'demo-student-id'
+
   return (
     <div className="space-y-6">
       <div>
@@ -398,38 +506,7 @@ function ProjectContent() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Chapters</CardTitle>
-          <CardDescription>
-            Work through each chapter of your project documentation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              'Chapter 1: Introduction',
-              'Chapter 2: Planning',
-              'Chapter 3: Analysis',
-              'Chapter 4: Design',
-              'Chapter 5: Implementation',
-              'Appendices'
-            ].map((chapter, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-violet-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {index + 1}
-                  </div>
-                  <span className="font-medium text-slate-900 dark:text-white">{chapter}</span>
-                </div>
-                <Button size="sm" variant="outline">
-                  Edit
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <ProjectForm studentId={demoStudentId} />
     </div>
   )
 }

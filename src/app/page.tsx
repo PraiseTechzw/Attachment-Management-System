@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, FileText, FolderTree, Github, Clipboard, Activity, Settings, User, Zap, Menu, X, Home as HomeIcon } from 'lucide-react'
@@ -140,6 +140,40 @@ export default function Home() {
 }
 
 function DashboardContent() {
+  const [stats, setStats] = useState({
+    totalLogs: 0,
+    reports: 0,
+    projects: 0,
+    daysActive: 0
+  })
+
+  // Load stats from documents
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/documents')
+      if (response.ok) {
+        const documents = await response.json()
+        
+        const logs = documents.filter((doc: any) => doc.type === 'log').length
+        const reports = documents.filter((doc: any) => doc.type === 'report').length
+        const projects = documents.filter((doc: any) => doc.type === 'project').length
+        
+        setStats({
+          totalLogs: logs,
+          reports: reports,
+          projects: projects,
+          daysActive: logs // Assuming each log represents a day
+        })
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
@@ -336,7 +370,7 @@ function DashboardContent() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950 group">
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950 group" onClick={() => setActiveTab('logs')}>
               <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50">
                 <Clipboard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
@@ -346,7 +380,7 @@ function DashboardContent() {
               </div>
             </Button>
             
-            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-emerald-50 hover:border-emerald-200 dark:hover:bg-emerald-950 group">
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-emerald-50 hover:border-emerald-200 dark:hover:bg-emerald-950 group" onClick={() => setActiveTab('monthly-reports')}>
               <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50">
                 <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
@@ -356,7 +390,7 @@ function DashboardContent() {
               </div>
             </Button>
             
-            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-amber-50 hover:border-amber-200 dark:hover:bg-amber-950 group">
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-amber-50 hover:border-amber-200 dark:hover:bg-amber-950 group" onClick={() => setActiveTab('project')}>
               <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/50">
                 <FolderTree className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
@@ -366,13 +400,13 @@ function DashboardContent() {
               </div>
             </Button>
 
-            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-violet-50 hover:border-violet-200 dark:hover:bg-violet-950 group">
+            <Button variant="outline" className="justify-start h-auto p-4 hover:bg-violet-50 hover:border-violet-200 dark:hover:bg-violet-950 group" onClick={() => setActiveTab('guidelines')}>
               <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center mr-3 group-hover:bg-violet-200 dark:group-hover:bg-violet-800/50">
-                <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                <BookOpen className="w-4 h-4 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="text-left">
-                <div className="font-medium text-slate-900 dark:text-white">AI Assistant</div>
-                <div className="text-xs text-slate-500">Get help with tasks</div>
+                <div className="font-medium text-slate-900 dark:text-white">View Guidelines</div>
+                <div className="text-xs text-slate-500">Access templates & docs</div>
               </div>
             </Button>
           </div>

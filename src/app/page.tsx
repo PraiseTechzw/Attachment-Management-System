@@ -146,6 +146,7 @@ function DashboardContent() {
     projects: 0,
     daysActive: 0
   })
+  const [isLoading, setIsLoading] = useState(true)
 
   // Load stats from documents
   useEffect(() => {
@@ -153,6 +154,7 @@ function DashboardContent() {
   }, [])
 
   const loadStats = async () => {
+    setIsLoading(true)
     try {
       const response = await fetch('/api/documents')
       if (response.ok) {
@@ -171,7 +173,20 @@ function DashboardContent() {
       }
     } catch (error) {
       console.error('Error loading stats:', error)
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Activity className="w-8 h-8 animate-spin mx-auto mb-4 text-slate-400" />
+          <p className="text-slate-500">Loading dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -427,22 +442,49 @@ function DashboardContent() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-4">
-              {[
-                { action: 'Created log entry', time: '2 hours ago', type: 'log', icon: Clipboard, color: 'text-blue-600' },
-                { action: 'Generated monthly report', time: '1 day ago', type: 'report', icon: FileText, color: 'text-emerald-600' },
-                { action: 'Updated project documentation', time: '2 days ago', type: 'project', icon: FolderTree, color: 'text-amber-600' },
-                { action: 'Completed skill assessment', time: '3 days ago', type: 'skill', icon: Zap, color: 'text-violet-600' }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                    <item.icon className={`w-4 h-4 ${item.color}`} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">{item.action}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.time}</p>
-                  </div>
+              {stats.totalLogs === 0 && stats.reports === 0 && stats.projects === 0 ? (
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  <Activity className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm">No activity yet</p>
+                  <p className="text-xs">Start by creating your first log entry</p>
                 </div>
-              ))}
+              ) : (
+                <>
+                  {stats.totalLogs > 0 && (
+                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                        <Clipboard className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Created {stats.totalLogs} log entries</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Daily activity logging</p>
+                      </div>
+                    </div>
+                  )}
+                  {stats.reports > 0 && (
+                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Generated {stats.reports} reports</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Monthly and final reports</p>
+                      </div>
+                    </div>
+                  )}
+                  {stats.projects > 0 && (
+                    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                        <FolderTree className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Documented {stats.projects} projects</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Project documentation</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

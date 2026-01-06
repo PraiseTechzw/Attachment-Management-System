@@ -9,13 +9,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { AILogSuggestion } from './AILogSuggestion'
+import { useApp } from '@/contexts/AppContext'
 
 interface LogEntryFormProps {
-  studentId: string
+  studentId?: string
 }
 
-export function LogEntryForm({ studentId }: LogEntryFormProps) {
+export function LogEntryForm({ studentId: propStudentId }: LogEntryFormProps) {
+  const { studentId, refreshStats } = useApp()
+  const actualStudentId = propStudentId || studentId
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     startTime: '08:00',
@@ -134,7 +136,7 @@ Generated on: ${new Date().toLocaleString()}
           filename: `Log_Entry_${formData.date}.txt`,
           content: logContent,
           type: 'log',
-          studentId
+          studentId: actualStudentId
         })
       })
 

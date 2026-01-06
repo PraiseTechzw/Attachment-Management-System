@@ -183,10 +183,10 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Logs</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">24</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.totalLogs}</p>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
                   <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1"></span>
-                  +12% from last week
+                  {stats.totalLogs > 0 ? 'Active logging' : 'Start logging today'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
@@ -195,7 +195,7 @@ function DashboardContent() {
             </div>
             {/* Mini chart */}
             <div className="mt-4 flex items-end space-x-1 h-8">
-              {[4, 6, 8, 5, 9, 7, 12].map((height, i) => (
+              {[4, 6, 8, 5, 9, 7, Math.max(12, stats.totalLogs)].map((height, i) => (
                 <div key={i} className="bg-blue-200 dark:bg-blue-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
               ))}
             </div>
@@ -207,10 +207,10 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Reports</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">8</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.reports}</p>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
                   <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1"></span>
-                  +3 this month
+                  {stats.reports > 0 ? `${stats.reports} generated` : 'No reports yet'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center">
@@ -219,7 +219,7 @@ function DashboardContent() {
             </div>
             {/* Mini chart */}
             <div className="mt-4 flex items-end space-x-1 h-8">
-              {[2, 3, 1, 4, 2, 5, 8].map((height, i) => (
+              {[2, 3, 1, 4, 2, 5, Math.max(8, stats.reports)].map((height, i) => (
                 <div key={i} className="bg-emerald-200 dark:bg-emerald-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
               ))}
             </div>

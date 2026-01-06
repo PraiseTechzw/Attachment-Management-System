@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { AILogSuggestion } from './AILogSuggestion'
 
 interface LogEntryFormProps {
   studentId: string
@@ -52,6 +53,31 @@ export function LogEntryForm({ studentId }: LogEntryFormProps) {
     }))
   }
 
+  const handleAISuggestion = (suggestion: string) => {
+    const activitiesMatch = suggestion.match(/\*\*Activities Performed:\*\*\n([\s\S]*?)\n\n/);
+    const skillsMatch = suggestion.match(/\*\*Skills & Knowledge Gained:\*\*\n([\s\S]*?)\n\n/);
+    const challengesMatch = suggestion.match(/\*\*Challenges Encountered:\*\*\n([\s\S]*?)\n\n/);
+    const solutionsMatch = suggestion.match(/\*\*Solutions & Approaches:\*\*\n([\s\S]*?)$/);
+
+    const newFormData: Partial<typeof formData> = {};
+    if (activitiesMatch && activitiesMatch[1]) {
+        newFormData.activities = activitiesMatch[1].replace(/- /g, '').trim();
+    }
+    if (challengesMatch && challengesMatch[1]) {
+        newFormData.challenges = challengesMatch[1].replace(/- /g, '').trim();
+    }
+    if (solutionsMatch && solutionsMatch[1]) {
+        newFormData.solutions = solutionsMatch[1].replace(/- /g, '').trim();
+    }
+    
+    setFormData(prev => ({ ...prev, ...newFormData }));
+
+    if (skillsMatch && skillsMatch[1]) {
+        const parsedSkills = skillsMatch[1].split('\n').map(s => s.replace(/- /g, '').trim()).filter(Boolean);
+        setSkills(prev => [...new Set([...prev, ...parsedSkills])]);
+    }
+  };
+
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
       setSkills(prev => [...prev, newSkill.trim()])
@@ -73,7 +99,6 @@ export function LogEntryForm({ studentId }: LogEntryFormProps) {
       createdAt: new Date().toISOString()
     }
     
-    // Create formatted log entry content
     const logContent = `
 DAILY ACTIVITY LOG ENTRY
 Date: ${formData.date}
@@ -100,7 +125,6 @@ Generated on: ${new Date().toLocaleString()}
     `
     
     try {
-      // Save to upload directory
       const response = await fetch('/api/save-document', {
         method: 'POST',
         headers: {
@@ -116,7 +140,6 @@ Generated on: ${new Date().toLocaleString()}
 
       if (response.ok) {
         console.log('Log entry saved successfully')
-        // Reset form
         setFormData({
           date: new Date().toISOString().split('T')[0],
           startTime: '08:00',
@@ -131,8 +154,6 @@ Generated on: ${new Date().toLocaleString()}
           attachments: []
         })
         setSkills([])
-        
-        // Show success message (you could add a toast notification here)
         alert('Log entry saved successfully!')
       } else {
         console.error('Failed to save log entry')
@@ -156,6 +177,7 @@ Generated on: ${new Date().toLocaleString()}
 
   return (
     <div className="space-y-6">
+      <AILogSuggestion onSuggestion={handleAISuggestion} />
       <Card className="border border-slate-200 dark:border-slate-700">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -168,7 +190,6 @@ Generated on: ${new Date().toLocaleString()}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Date and Time Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date" className="flex items-center gap-2">
@@ -211,7 +232,6 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
 
-            {/* Department and Supervisor */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="department">Department/Unit</Label>
@@ -240,7 +260,6 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
 
-            {/* Activities */}
             <div className="space-y-2">
               <Label htmlFor="activities">Activities Performed</Label>
               <Textarea
@@ -253,7 +272,6 @@ Generated on: ${new Date().toLocaleString()}
               />
             </div>
 
-            {/* Skills Learned */}
             <div className="space-y-2">
               <Label>Skills & Knowledge Gained</Label>
               <div className="flex gap-2">
@@ -283,7 +301,6 @@ Generated on: ${new Date().toLocaleString()}
               )}
             </div>
 
-            {/* Challenges and Solutions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="challenges">Challenges Encountered</Label>
@@ -307,7 +324,6 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
 
-            {/* Reflection */}
             <div className="space-y-2">
               <Label htmlFor="reflection">Daily Reflection</Label>
               <Textarea
@@ -319,7 +335,6 @@ Generated on: ${new Date().toLocaleString()}
               />
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end">
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                 <Save className="w-4 h-4 mr-2" />
@@ -330,7 +345,6 @@ Generated on: ${new Date().toLocaleString()}
         </CardContent>
       </Card>
 
-      {/* Recent Entries Preview */}
       <Card className="border border-slate-200 dark:border-slate-700">
         <CardHeader>
           <CardTitle className="text-lg">Recent Log Entries</CardTitle>

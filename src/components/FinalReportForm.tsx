@@ -225,14 +225,25 @@ Generated on: ${new Date().toLocaleDateString()}
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
         
-        showToast('success', 'Final report saved and downloaded successfully!')
+        toast({
+          title: "Success",
+          description: "Final report saved and downloaded successfully!",
+        })
       } else {
         console.error('Failed to save final report')
-        showToast('error', 'Failed to save report. Please try again.')
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save report. Please try again.",
+        })
       }
     } catch (error) {
       console.error('Error saving final report:', error)
-      showToast('error', 'Error saving report. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving report. Please try again.",
+      })
     }
   }
 

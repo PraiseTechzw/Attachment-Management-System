@@ -261,7 +261,11 @@ function DashboardContent() {
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Active</p>
                 <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.daysActive}</p>
                 <p className="text-xs text-violet-600 dark:text-violet-400 flex items-center mt-1">
-                  <span className="inl2 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center">
+                  <span className="inline-block w-2 h-2 bg-violet-500 rounded-full mr-1"></span>
+                  {stats.daysActive > 0 ? `${Math.round((stats.daysActive / 60) * 100)}% progress` : 'Start your journey'}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center">
                 <Activity className="w-6 h-6 text-violet-600 dark:text-violet-400" />
               </div>
             </div>
@@ -274,7 +278,7 @@ function DashboardContent() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    strokeDasharray="89, 100"
+                    strokeDasharray={`${Math.min(89, (stats.daysActive / 60) * 100)}, 100`}
                     className="text-violet-500 dark:text-violet-400"
                   />
                   <path
@@ -286,7 +290,9 @@ function DashboardContent() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">89%</span>
+                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+                    {Math.round((stats.daysActive / 60) * 100)}%
+                  </span>
                 </div>
               </div>
             </div>

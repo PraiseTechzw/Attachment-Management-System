@@ -106,7 +106,7 @@ Generated on: ${new Date().toLocaleDateString()}
           filename: `Monthly_Report_${months[reportData.month - 1]}_${reportData.year}.txt`,
           content: report,
           type: 'report',
-          studentId
+          studentId: actualStudentId
         })
       })
 

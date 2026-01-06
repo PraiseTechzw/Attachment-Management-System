@@ -128,7 +128,7 @@ function HomeContent() {
 
         {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
-          {activeTab === 'dashboard' && <DashboardContent />}
+          {activeTab === 'dashboard' && <DashboardContent setActiveTab={setActiveTab} />}
           {activeTab === 'logs' && <LogsContent />}
           {activeTab === 'monthly-reports' && <MonthlyReportsContent />}
           {activeTab === 'final-report' && <FinalReportContent />}
@@ -137,11 +137,12 @@ function HomeContent() {
           {activeTab === 'github' && <GithubContent />}
         </main>
       </div>
+      <ToastContainer />
     </div>
   )
 }
 
-function DashboardContent() {
+function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const { stats, isLoading } = useApp()
 
   if (isLoading) {

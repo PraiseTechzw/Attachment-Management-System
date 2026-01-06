@@ -9,9 +9,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FolderTree, Download, Plus, Trash2, FileText, Code, Database, Globe } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { useApp } from '@/contexts/AppContext'
+import { showToast } from '@/components/ui/toast'
 
 interface ProjectFormProps {
-  studentId: string
+  studentId?: string
 }
 
 interface ProjectPhase {
@@ -23,7 +25,9 @@ interface ProjectPhase {
   endDate: string
 }
 
-export function ProjectForm({ studentId }: ProjectFormProps) {
+export function ProjectForm({ studentId: propStudentId }: ProjectFormProps) {
+  const { studentId, refreshStats } = useApp()
+  const actualStudentId = propStudentId || studentId
   const [projectData, setProjectData] = useState({
     projectTitle: '',
     projectType: '',
@@ -222,12 +226,13 @@ Generated on: ${new Date().toLocaleDateString()}
           filename: `Project_Documentation_${projectData.projectTitle.replace(/\s+/g, '_')}.txt`,
           content: document,
           type: 'project',
-          studentId
+          studentId: actualStudentId
         })
       })
 
       if (response.ok) {
         console.log('Project documentation saved successfully')
+        await refreshStats()
         // Also download the file
         const blob = new Blob([document], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
@@ -239,14 +244,14 @@ Generated on: ${new Date().toLocaleDateString()}
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
         
-        alert('Project documentation saved and downloaded successfully!')
+        showToast('success', 'Project documentation saved and downloaded successfully!')
       } else {
         console.error('Failed to save project documentation')
-        alert('Failed to save documentation. Please try again.')
+        showToast('error', 'Failed to save documentation. Please try again.')
       }
     } catch (error) {
       console.error('Error saving project documentation:', error)
-      alert('Error saving documentation. Please try again.')
+      showToast('error', 'Error saving documentation. Please try again.')
     }
   }
 

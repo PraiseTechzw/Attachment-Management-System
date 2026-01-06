@@ -10,17 +10,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileText, Download, Upload, CheckCircle, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { useApp } from '@/contexts/AppContext'
+import { showToast } from '@/components/ui/toast'
 
 interface FinalReportFormProps {
-  studentId: string
+  studentId?: string
 }
 
-export function FinalReportForm({ studentId }: FinalReportFormProps) {
+export function FinalReportForm({ studentId: propStudentId }: FinalReportFormProps) {
+  const { studentId, refreshStats } = useApp()
+  const actualStudentId = propStudentId || studentId
   const [currentSection, setCurrentSection] = useState(0)
   const [reportData, setReportData] = useState({
     // Basic Information
     studentName: '',
-    studentId: studentId,
+    studentId: actualStudentId,
     program: '',
     year: '',
     organization: '',
@@ -202,12 +206,13 @@ Generated on: ${new Date().toLocaleDateString()}
           filename: `Final_Attachment_Report_${reportData.studentId}.txt`,
           content: report,
           type: 'report',
-          studentId: reportData.studentId
+          studentId: actualStudentId
         })
       })
 
       if (response.ok) {
         console.log('Final report saved successfully')
+        await refreshStats()
         // Also download the file
         const blob = new Blob([report], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
@@ -219,14 +224,14 @@ Generated on: ${new Date().toLocaleDateString()}
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
         
-        alert('Final report saved and downloaded successfully!')
+        showToast('success', 'Final report saved and downloaded successfully!')
       } else {
         console.error('Failed to save final report')
-        alert('Failed to save report. Please try again.')
+        showToast('error', 'Failed to save report. Please try again.')
       }
     } catch (error) {
       console.error('Error saving final report:', error)
-      alert('Error saving report. Please try again.')
+      showToast('error', 'Error saving report. Please try again.')
     }
   }
 

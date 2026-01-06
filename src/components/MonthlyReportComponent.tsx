@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileText, Download, Calendar, TrendingUp, Target, Award } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/contexts/AppContext'
+import { useToast } from '@/hooks/use-toast'
 
 interface MonthlyReportProps {
   studentId?: string
@@ -17,6 +18,7 @@ interface MonthlyReportProps {
 
 export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyReportProps) {
   const { studentId, refreshStats } = useApp()
+  const { toast } = useToast()
   const actualStudentId = propStudentId || studentId
   const [reportData, setReportData] = useState({
     month: new Date().getMonth() + 1,
@@ -116,11 +118,19 @@ Generated on: ${new Date().toLocaleDateString()}
         console.log('Monthly report saved successfully')
       } else {
         console.error('Failed to save monthly report')
-        alert('Failed to save report. Please try again.')
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save report. Please try again.",
+        })
       }
     } catch (error) {
       console.error('Error saving monthly report:', error)
-      alert('Error saving report. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving report. Please try again.",
+      })
     } finally {
       setIsGenerating(false)
     }

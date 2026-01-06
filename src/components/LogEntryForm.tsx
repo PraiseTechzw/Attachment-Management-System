@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/contexts/AppContext'
+import { useToast } from '@/hooks/use-toast'
 
 interface LogEntryFormProps {
   studentId?: string
@@ -17,6 +18,7 @@ interface LogEntryFormProps {
 
 export function LogEntryForm({ studentId: propStudentId }: LogEntryFormProps) {
   const { studentId, refreshStats } = useApp()
+  const { toast } = useToast()
   const actualStudentId = propStudentId || studentId
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -158,14 +160,25 @@ Generated on: ${new Date().toLocaleString()}
           attachments: []
         })
         setSkills([])
-        alert('Log entry saved successfully!')
+        toast({
+          title: "Success",
+          description: "Log entry saved successfully!",
+        })
       } else {
         console.error('Failed to save log entry')
-        alert('Failed to save log entry. Please try again.')
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save log entry. Please try again.",
+        })
       }
     } catch (error) {
       console.error('Error saving log entry:', error)
-      alert('Error saving log entry. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving log entry. Please try again.",
+      })
     }
   }
 

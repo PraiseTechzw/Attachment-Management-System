@@ -11,6 +11,7 @@ import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/contexts/AppContext'
 import { useToast } from '@/hooks/use-toast'
+import { AILogSuggestion } from './AILogSuggestion'
 
 interface LogEntryFormProps {
   studentId?: string

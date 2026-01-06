@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FolderTree, Download, Plus, Trash2, FileText, Code, Database, Globe } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/contexts/AppContext'
-import { showToast } from '@/components/ui/toast'
+import { useToast } from '@/hooks/use-toast'
 
 interface ProjectFormProps {
   studentId?: string
@@ -27,6 +27,7 @@ interface ProjectPhase {
 
 export function ProjectForm({ studentId: propStudentId }: ProjectFormProps) {
   const { studentId, refreshStats } = useApp()
+  const { toast } = useToast()
   const actualStudentId = propStudentId || studentId
   const [projectData, setProjectData] = useState({
     projectTitle: '',
@@ -244,14 +245,25 @@ Generated on: ${new Date().toLocaleDateString()}
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
         
-        showToast('success', 'Project documentation saved and downloaded successfully!')
+        toast({
+          title: "Success",
+          description: "Project documentation saved and downloaded successfully!",
+        })
       } else {
         console.error('Failed to save project documentation')
-        showToast('error', 'Failed to save documentation. Please try again.')
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save documentation. Please try again.",
+        })
       }
     } catch (error) {
       console.error('Error saving project documentation:', error)
-      showToast('error', 'Error saving documentation. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving documentation. Please try again.",
+      })
     }
   }
 

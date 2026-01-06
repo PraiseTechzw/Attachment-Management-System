@@ -10,7 +10,7 @@ import { FinalReportForm } from '@/components/FinalReportForm'
 import { ProjectForm } from '@/components/ProjectForm'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { AppProvider, useApp } from '@/contexts/AppContext'
-import { ToastContainer } from '@/components/ui/toast'
+import { Toaster } from '@/components/ui/toaster'
 
 function HomeContent() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -137,7 +137,7 @@ function HomeContent() {
           {activeTab === 'github' && <GithubContent />}
         </main>
       </div>
-      <ToastContainer />
+      <Toaster />
     </div>
   )
 }

@@ -1,23 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { saveDocumentToUpload } from '@/lib/document-utils'
+import { getAuthFromRequest } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { filename, content, type, studentId } = body
-
-    if (!filename || !content || !type || !studentId) {
+    // Check authentication
+    const auth = getAuthFromRequest(request)
+    if (!auth) {
       return NextResponse.json(
-        { error: 'Missing required fields: filename, content, type, studentId' },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { filename, content, type } = body
+
+    if (!filename || !content || !type) {
+      return NextResponse.json(
+        { error: 'Missing required fields: filename, content, type' },
         { status: 400 }
       )
     }
 
+    // Use studentId from auth token
     const filePath = saveDocumentToUpload({
       filename,
       content,
       type,
-      studentId
+      studentId: auth.studentId
     })
 
     return NextResponse.json({

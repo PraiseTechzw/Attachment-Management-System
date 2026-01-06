@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { listDocumentsInUpload } from '@/lib/document-utils'
+import { getAuthFromRequest } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const auth = getAuthFromRequest(request)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const documents = listDocumentsInUpload()
     
+    // Filter documents for the authenticated user
+    const userDocuments = documents.filter(doc => 
+      doc.name.includes(auth.studentId) || 
+      doc.name.includes('Guidelines') || 
+      doc.name.includes('template')
+    )
+    
     // Transform documents to match our interface
-    const transformedDocs = documents.map(doc => ({
+    const transformedDocs = userDocuments.map(doc => ({
       name: doc.name.replace(/^\w+_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_/, ''), // Remove timestamp prefix
       path: `/${doc.path}`,
       description: getDescriptionByType(doc.type, doc.name),

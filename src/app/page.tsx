@@ -9,8 +9,9 @@ import { MonthlyReportComponent } from '@/components/MonthlyReportComponent'
 import { FinalReportForm } from '@/components/FinalReportForm'
 import { ProjectForm } from '@/components/ProjectForm'
 import { DocumentViewer } from '@/components/DocumentViewer'
+import { AppProvider, useApp } from '@/contexts/AppContext'
 
-export default function Home() {
+function HomeContent() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -140,43 +141,7 @@ export default function Home() {
 }
 
 function DashboardContent() {
-  const [stats, setStats] = useState({
-    totalLogs: 0,
-    reports: 0,
-    projects: 0,
-    daysActive: 0
-  })
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Load stats from documents
-  useEffect(() => {
-    loadStats()
-  }, [])
-
-  const loadStats = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/documents')
-      if (response.ok) {
-        const documents = await response.json()
-        
-        const logs = documents.filter((doc: any) => doc.type === 'log').length
-        const reports = documents.filter((doc: any) => doc.type === 'report').length
-        const projects = documents.filter((doc: any) => doc.type === 'project').length
-        
-        setStats({
-          totalLogs: logs,
-          reports: reports,
-          projects: projects,
-          daysActive: logs // Assuming each log represents a day
-        })
-      }
-    } catch (error) {
-      console.error('Error loading stats:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { stats, isLoading } = useApp()
 
   if (isLoading) {
     return (
@@ -520,8 +485,6 @@ function DashboardContent() {
 }
 
 function LogsContent() {
-  const demoStudentId = 'demo-student-id'
-
   return (
     <div className="space-y-6">
       <div>
@@ -533,14 +496,12 @@ function LogsContent() {
         </p>
       </div>
 
-      <LogEntryForm studentId={demoStudentId} />
+      <LogEntryForm />
     </div>
   )
 }
 
 function MonthlyReportsContent() {
-  const demoStudentId = 'demo-student-id'
-
   return (
     <div className="space-y-6">
       <div>
@@ -552,14 +513,12 @@ function MonthlyReportsContent() {
         </p>
       </div>
 
-      <MonthlyReportComponent studentId={demoStudentId} />
+      <MonthlyReportComponent />
     </div>
   )
 }
 
 function FinalReportContent() {
-  const demoStudentId = 'demo-student-id'
-
   return (
     <div className="space-y-6">
       <div>
@@ -571,14 +530,12 @@ function FinalReportContent() {
         </p>
       </div>
 
-      <FinalReportForm studentId={demoStudentId} />
+      <FinalReportForm />
     </div>
   )
 }
 
 function ProjectContent() {
-  const demoStudentId = 'demo-student-id'
-
   return (
     <div className="space-y-6">
       <div>
@@ -590,7 +547,7 @@ function ProjectContent() {
         </p>
       </div>
 
-      <ProjectForm studentId={demoStudentId} />
+      <ProjectForm />
     </div>
   )
 }
@@ -631,5 +588,13 @@ function GithubContent() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <AppProvider>
+      <HomeContent />
+    </AppProvider>
   )
 }

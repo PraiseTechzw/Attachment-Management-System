@@ -142,6 +142,8 @@ Generated on: ${new Date().toLocaleString()}
 
       if (response.ok) {
         console.log('Log entry saved successfully')
+        // Refresh stats
+        await refreshStats()
         setFormData({
           date: new Date().toISOString().split('T')[0],
           startTime: '08:00',

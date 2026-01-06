@@ -1,295 +1,365 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FileText, Sparkles, Download, Trash2, Eye } from 'lucide-react'
+import { FileText, Download, Calendar, TrendingUp, Target, Award } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
-interface MonthlyReport {
-  id: string
-  month: string
-  year: string
-  summary: string
-  duties: string
-  problems: string
-  analysis: string
-  conclusion: string
-  status: string
-  createdAt: string
+interface MonthlyReportProps {
+  studentId: string
 }
 
-export function MonthlyReportComponent({ studentId }: { studentId: string }) {
-  const [reports, setReports] = useState<MonthlyReport[]>([])
-  const [generating, setGenerating] = useState(false)
-  const [selectedMonth, setSelectedMonth] = useState('')
-  const [selectedYear, setSelectedYear] = useState('')
-  const [viewingReport, setViewingReport] = useState<MonthlyReport | null>(null)
+export function MonthlyReportComponent({ studentId }: MonthlyReportProps) {
+  const [reportData, setReportData] = useState({
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    department: '',
+    supervisor: '',
+    totalHours: 0,
+    daysWorked: 0,
+    keyAchievements: '',
+    skillsDeveloped: '',
+    projectsWorked: '',
+    challenges: '',
+    learningOutcomes: '',
+    futureGoals: '',
+    supervisorFeedback: '',
+    selfAssessment: ''
+  })
 
-  useEffect(() => {
-    fetchReports()
-  }, [studentId])
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generatedReport, setGeneratedReport] = useState<string | null>(null)
 
-  const fetchReports = async () => {
-    try {
-      const response = await fetch(`/api/monthly-reports?studentId=${studentId}`)
-      const data = await response.json()
-      setReports(data)
-    } catch (error) {
-      console.error('Error fetching reports:', error)
-    }
-  }
-
-  const generateReport = async () => {
-    if (!selectedMonth || !selectedYear) {
-      alert('Please select both month and year')
-      return
-    }
-
-    setGenerating(true)
-
-    try {
-      const response = await fetch('/api/monthly-reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId,
-          month: selectedMonth,
-          year: selectedYear
-        })
-      })
-
-      if (response.ok) {
-        await fetchReports()
-        alert('Monthly report generated successfully!')
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.error}`)
-      }
-    } catch (error) {
-      console.error('Error generating report:', error)
-      alert('Failed to generate report. Please try again.')
-    } finally {
-      setGenerating(false)
-    }
-  }
-
-  const deleteReport = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this report?')) return
-
-    try {
-      const response = await fetch(`/api/monthly-reports/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        await fetchReports()
-      }
-    } catch (error) {
-      console.error('Error deleting report:', error)
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      {!viewingReport ? (
-        <>
-          {/* Generate New Report */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-600" />
-                Generate Monthly Report
-              </CardTitle>
-              <CardDescription>
-                AI will analyze your logs and create a comprehensive monthly report
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="month">Month</Label>
-                    <Select
-                      value={selectedMonth}
-                      onValueChange={setSelectedMonth}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select month" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">January</SelectItem>
-                        <SelectItem value="2">February</SelectItem>
-                        <SelectItem value="3">March</SelectItem>
-                        <SelectItem value="4">April</SelectItem>
-                        <SelectItem value="5">May</SelectItem>
-                        <SelectItem value="6">June</SelectItem>
-                        <SelectItem value="7">July</SelectItem>
-                        <SelectItem value="8">August</SelectItem>
-                        <SelectItem value="9">September</SelectItem>
-                        <SelectItem value="10">October</SelectItem>
-                        <SelectItem value="11">November</SelectItem>
-                        <SelectItem value="12">December</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="year">Year</Label>
-                    <Input
-                      id="year"
-                      type="number"
-                      placeholder="2024"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={generateReport}
-                  disabled={generating}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {generating ? 'Generating with AI...' : 'Generate Report'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Existing Reports */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Monthly Reports</CardTitle>
-              <CardDescription>
-                Generated reports ({reports.length})
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {reports.length === 0 ? (
-                <div className="text-center py-12 text-slate-500">
-                  <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>No reports generated yet</p>
-                  <p className="text-sm">Generate your first monthly report above</p>
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {reports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900 dark:text-white">
-                              {getMonthName(parseInt(report.month))} {report.year}
-                            </h3>
-                            <p className="text-sm text-slate-500">
-                              {new Date(report.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setViewingReport(report)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => alert('Download functionality coming soon!')}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteReport(report.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>
-                {getMonthName(parseInt(viewingReport.month))} {viewingReport.year} Report
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setViewingReport(null)}
-              >
-                Back
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6 prose dark:prose-invert max-w-none">
-              <section>
-                <h3 className="text-lg font-semibold mb-2">Introduction/Summary</h3>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {viewingReport.summary}
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-lg font-semibold mb-2">Duties and Activities</h3>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {viewingReport.duties}
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-lg font-semibold mb-2">Problems/Challenges</h3>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {viewingReport.problems}
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-lg font-semibold mb-2">Analysis</h3>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {viewingReport.analysis}
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {viewingReport.conclusion}
-                </p>
-              </section>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  )
-}
-
-function getMonthName(month: number): string {
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
-  return months[month - 1] || 'Unknown'
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setReportData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const generateReport = async () => {
+    setIsGenerating(true)
+    
+    // Create the report content
+    const report = `
+MONTHLY ATTACHMENT REPORT
+${months[reportData.month - 1]} ${reportData.year}
+
+STUDENT INFORMATION
+Student ID: ${studentId}
+Department: ${reportData.department}
+Supervisor: ${reportData.supervisor}
+
+ATTENDANCE SUMMARY
+Total Hours Worked: ${reportData.totalHours}
+Days Worked: ${reportData.daysWorked}
+Average Hours per Day: ${reportData.daysWorked > 0 ? (reportData.totalHours / reportData.daysWorked).toFixed(1) : 0}
+
+KEY ACHIEVEMENTS
+${reportData.keyAchievements}
+
+SKILLS DEVELOPED
+${reportData.skillsDeveloped}
+
+PROJECTS WORKED ON
+${reportData.projectsWorked}
+
+CHALLENGES ENCOUNTERED
+${reportData.challenges}
+
+LEARNING OUTCOMES
+${reportData.learningOutcomes}
+
+FUTURE GOALS
+${reportData.futureGoals}
+
+SUPERVISOR FEEDBACK
+${reportData.supervisorFeedback}
+
+SELF ASSESSMENT
+${reportData.selfAssessment}
+
+Generated on: ${new Date().toLocaleDateString()}
+    `
+    
+    try {
+      // Save to upload directory
+      const response = await fetch('/api/save-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: `Monthly_Report_${months[reportData.month - 1]}_${reportData.year}.txt`,
+          content: report,
+          type: 'report',
+          studentId
+        })
+      })
+
+      if (response.ok) {
+        setGeneratedReport(report)
+        console.log('Monthly report saved successfully')
+      } else {
+        console.error('Failed to save monthly report')
+        alert('Failed to save report. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error saving monthly report:', error)
+      alert('Error saving report. Please try again.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const downloadReport = () => {
+    if (!generatedReport) return
+    
+    const blob = new Blob([generatedReport], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Monthly_Report_${months[reportData.month - 1]}_${reportData.year}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="border border-slate-200 dark:border-slate-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-emerald-600" />
+            Monthly Report Generator
+          </CardTitle>
+          <CardDescription>
+            Generate comprehensive monthly reports from your log entries
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Report Period */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Month
+              </Label>
+              <Select 
+                value={reportData.month.toString()} 
+                onValueChange={(value) => handleInputChange('month', parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month, index) => (
+                    <SelectItem key={month} value={(index + 1).toString()}>
+                      {month}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Year</Label>
+              <Input
+                type="number"
+                value={reportData.year}
+                onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                min="2020"
+                max="2030"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Department</Label>
+              <Input
+                value={reportData.department}
+                onChange={(e) => handleInputChange('department', e.target.value)}
+                placeholder="Your department"
+              />
+            </div>
+          </div>
+
+          {/* Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Total Hours Worked</Label>
+              <Input
+                type="number"
+                value={reportData.totalHours}
+                onChange={(e) => handleInputChange('totalHours', parseInt(e.target.value))}
+                placeholder="160"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Days Worked</Label>
+              <Input
+                type="number"
+                value={reportData.daysWorked}
+                onChange={(e) => handleInputChange('daysWorked', parseInt(e.target.value))}
+                placeholder="20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Supervisor</Label>
+              <Input
+                value={reportData.supervisor}
+                onChange={(e) => handleInputChange('supervisor', e.target.value)}
+                placeholder="Supervisor name"
+              />
+            </div>
+          </div>
+
+          {/* Content Sections */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                Key Achievements
+              </Label>
+              <Textarea
+                value={reportData.keyAchievements}
+                onChange={(e) => handleInputChange('keyAchievements', e.target.value)}
+                placeholder="List your major accomplishments this month..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Skills Developed
+              </Label>
+              <Textarea
+                value={reportData.skillsDeveloped}
+                onChange={(e) => handleInputChange('skillsDeveloped', e.target.value)}
+                placeholder="Describe new skills and competencies gained..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Projects Worked On
+              </Label>
+              <Textarea
+                value={reportData.projectsWorked}
+                onChange={(e) => handleInputChange('projectsWorked', e.target.value)}
+                placeholder="Detail the projects and tasks you contributed to..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Challenges Encountered</Label>
+                <Textarea
+                  value={reportData.challenges}
+                  onChange={(e) => handleInputChange('challenges', e.target.value)}
+                  placeholder="Describe difficulties faced..."
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Learning Outcomes</Label>
+                <Textarea
+                  value={reportData.learningOutcomes}
+                  onChange={(e) => handleInputChange('learningOutcomes', e.target.value)}
+                  placeholder="What did you learn from these experiences..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Future Goals</Label>
+              <Textarea
+                value={reportData.futureGoals}
+                onChange={(e) => handleInputChange('futureGoals', e.target.value)}
+                placeholder="Your objectives for the next month..."
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Self Assessment</Label>
+              <Textarea
+                value={reportData.selfAssessment}
+                onChange={(e) => handleInputChange('selfAssessment', e.target.value)}
+                placeholder="Evaluate your performance and growth..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button 
+              onClick={generateReport} 
+              disabled={isGenerating}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {isGenerating ? 'Generating...' : 'Generate Report'}
+            </Button>
+            
+            {generatedReport && (
+              <Button 
+                onClick={downloadReport}
+                variant="outline"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Report
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Generated Report Preview */}
+      {generatedReport && (
+        <Card className="border border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <CardTitle>Generated Report Preview</CardTitle>
+            <CardDescription>
+              Review your monthly report before downloading
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+              <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-mono">
+                {generatedReport}
+              </pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Previous Reports */}
+      <Card className="border border-slate-200 dark:border-slate-700">
+        <CardHeader>
+          <CardTitle>Previous Reports</CardTitle>
+          <CardDescription>Access your previously generated monthly reports</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">No previous reports</p>
+            <p className="text-xs">Generated reports will appear here</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

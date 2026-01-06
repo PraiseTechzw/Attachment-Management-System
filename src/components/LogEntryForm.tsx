@@ -1,318 +1,347 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Clipboard, Plus, Trash2, Edit } from 'lucide-react'
+import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
-interface LogEntry {
-  id?: string
-  date: string
-  time?: string
-  activity: string
-  skills?: string
-  challenges?: string
-  solutions?: string
-  category?: string
+interface LogEntryFormProps {
+  studentId: string
 }
 
-export function LogEntryForm({ studentId }: { studentId: string }) {
-  const [logs, setLogs] = useState<LogEntry[]>([])
-  const [formData, setFormData] = useState<LogEntry>({
+export function LogEntryForm({ studentId }: LogEntryFormProps) {
+  const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    time: '',
-    activity: '',
-    skills: '',
+    startTime: '08:00',
+    endTime: '17:00',
+    department: '',
+    supervisor: '',
+    activities: '',
+    skillsLearned: '',
     challenges: '',
     solutions: '',
-    category: ''
+    reflection: '',
+    attachments: [] as string[]
   })
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchLogs()
-  }, [studentId])
+  const [skills, setSkills] = useState<string[]>([])
+  const [newSkill, setNewSkill] = useState('')
 
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch(`/api/logs?studentId=${studentId}`)
-      const data = await response.json()
-      setLogs(data)
-    } catch (error) {
-      console.error('Error fetching logs:', error)
+  const departments = [
+    'Information Technology',
+    'Software Development',
+    'Network Administration',
+    'Database Management',
+    'Cybersecurity',
+    'Project Management',
+    'Quality Assurance',
+    'Technical Support',
+    'Research & Development',
+    'Other'
+  ]
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const addSkill = () => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      setSkills(prev => [...prev, newSkill.trim()])
+      setNewSkill('')
     }
+  }
+
+  const removeSkill = (skillToRemove: string) => {
+    setSkills(prev => prev.filter(skill => skill !== skillToRemove))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    
+    const logEntry = {
+      ...formData,
+      skillsLearned: skills.join(', '),
+      studentId,
+      createdAt: new Date().toISOString()
+    }
+    
+    // Create formatted log entry content
+    const logContent = `
+DAILY ACTIVITY LOG ENTRY
+Date: ${formData.date}
+Time: ${formData.startTime} - ${formData.endTime} (${calculateHours()} hours)
+Department: ${formData.department}
+Supervisor: ${formData.supervisor}
 
+ACTIVITIES PERFORMED:
+${formData.activities}
+
+SKILLS & KNOWLEDGE GAINED:
+${skills.join(', ')}
+
+CHALLENGES ENCOUNTERED:
+${formData.challenges}
+
+SOLUTIONS & APPROACHES:
+${formData.solutions}
+
+DAILY REFLECTION:
+${formData.reflection}
+
+Generated on: ${new Date().toLocaleString()}
+    `
+    
     try {
-      const url = editingId ? `/api/logs/${editingId}` : '/api/logs'
-      const method = editingId ? 'PUT' : 'POST'
-      const body = { ...formData, studentId }
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+      // Save to upload directory
+      const response = await fetch('/api/save-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: `Log_Entry_${formData.date}.txt`,
+          content: logContent,
+          type: 'log',
+          studentId
+        })
       })
 
       if (response.ok) {
-        await fetchLogs()
-        resetForm()
+        console.log('Log entry saved successfully')
+        // Reset form
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          startTime: '08:00',
+          endTime: '17:00',
+          department: '',
+          supervisor: '',
+          activities: '',
+          skillsLearned: '',
+          challenges: '',
+          solutions: '',
+          reflection: '',
+          attachments: []
+        })
+        setSkills([])
+        
+        // Show success message (you could add a toast notification here)
+        alert('Log entry saved successfully!')
+      } else {
+        console.error('Failed to save log entry')
+        alert('Failed to save log entry. Please try again.')
       }
     } catch (error) {
-      console.error('Error saving log:', error)
-    } finally {
-      setLoading(false)
+      console.error('Error saving log entry:', error)
+      alert('Error saving log entry. Please try again.')
     }
   }
 
-  const handleEdit = (log: LogEntry) => {
-    setFormData(log)
-    setEditingId(log.id || null)
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this log entry?')) return
-
-    try {
-      const response = await fetch(`/api/logs/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        await fetchLogs()
-      }
-    } catch (error) {
-      console.error('Error deleting log:', error)
+  const calculateHours = () => {
+    if (formData.startTime && formData.endTime) {
+      const start = new Date(`2000-01-01T${formData.startTime}`)
+      const end = new Date(`2000-01-01T${formData.endTime}`)
+      const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+      return diff > 0 ? diff.toFixed(1) : '0'
     }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      date: new Date().toISOString().split('T')[0],
-      time: '',
-      activity: '',
-      skills: '',
-      challenges: '',
-      solutions: '',
-      category: ''
-    })
-    setEditingId(null)
+    return '0'
   }
 
   return (
     <div className="space-y-6">
-      {/* Log Entry Form */}
-      <Card>
+      <Card className="border border-slate-200 dark:border-slate-700">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clipboard className="w-5 h-5 text-violet-600" />
-            {editingId ? 'Edit Log Entry' : 'New Log Entry'}
+            <FileText className="w-5 h-5 text-blue-600" />
+            Daily Activity Log Entry
           </CardTitle>
           <CardDescription>
-            Record your daily activities, skills learned, and challenges faced
+            Record your daily activities, learning outcomes, and reflections
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Date and Time Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Date *</Label>
+                <Label htmlFor="date" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Date
+                </Label>
                 <Input
                   id="date"
                   type="date"
                   value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
                   required
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="time">Time</Label>
+                <Label htmlFor="startTime" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Start Time
+                </Label>
                 <Input
-                  id="time"
+                  id="startTime"
                   type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                  value={formData.startTime}
+                  onChange={(e) => handleInputChange('startTime', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endTime">End Time</Label>
+                <Input
+                  id="endTime"
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => handleInputChange('endTime', e.target.value)}
+                  required
+                />
+                <p className="text-xs text-slate-500">
+                  Total Hours: {calculateHours()}
+                </p>
+              </div>
+            </div>
+
+            {/* Department and Supervisor */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="department">Department/Unit</Label>
+                <Select value={formData.department} onValueChange={(value) => handleInputChange('department', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supervisor">Supervisor/Mentor</Label>
+                <Input
+                  id="supervisor"
+                  value={formData.supervisor}
+                  onChange={(e) => handleInputChange('supervisor', e.target.value)}
+                  placeholder="Name of supervisor or mentor"
+                  required
                 />
               </div>
             </div>
 
+            {/* Activities */}
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="development">Software Development</SelectItem>
-                  <SelectItem value="maintenance">System Maintenance</SelectItem>
-                  <SelectItem value="research">Research & Learning</SelectItem>
-                  <SelectItem value="meetings">Meetings</SelectItem>
-                  <SelectItem value="documentation">Documentation</SelectItem>
-                  <SelectItem value="training">Training</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="activity">Activity Description *</Label>
+              <Label htmlFor="activities">Activities Performed</Label>
               <Textarea
-                id="activity"
-                placeholder="Describe what you did during this session..."
-                value={formData.activity}
-                onChange={(e) => setFormData({ ...formData, activity: e.target.value })}
-                required
+                id="activities"
+                value={formData.activities}
+                onChange={(e) => handleInputChange('activities', e.target.value)}
+                placeholder="Describe the tasks and activities you performed today..."
                 rows={4}
+                required
               />
             </div>
 
+            {/* Skills Learned */}
             <div className="space-y-2">
-              <Label htmlFor="skills">Skills Gained</Label>
-              <Textarea
-                id="skills"
-                placeholder="What skills did you learn or practice?"
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="challenges">Challenges Faced</Label>
-              <Textarea
-                id="challenges"
-                placeholder="Any difficulties or challenges encountered?"
-                value={formData.challenges}
-                onChange={(e) => setFormData({ ...formData, challenges: e.target.value })}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="solutions">Solutions Applied</Label>
-              <Textarea
-                id="solutions"
-                placeholder="How did you solve the challenges?"
-                value={formData.solutions}
-                onChange={(e) => setFormData({ ...formData, solutions: e.target.value })}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-violet-600 hover:bg-violet-700"
-              >
-                {loading ? 'Saving...' : editingId ? 'Update Entry' : 'Save Entry'}
-              </Button>
-              {editingId && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={resetForm}
-                >
-                  Cancel
+              <Label>Skills & Knowledge Gained</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="Add a skill or knowledge area"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                />
+                <Button type="button" onClick={addSkill} variant="outline">
+                  <Plus className="w-4 h-4" />
                 </Button>
+              </div>
+              {skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {skills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => removeSkill(skill)}
+                    >
+                      {skill} ×
+                    </Badge>
+                  ))}
+                </div>
               )}
+            </div>
+
+            {/* Challenges and Solutions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="challenges">Challenges Encountered</Label>
+                <Textarea
+                  id="challenges"
+                  value={formData.challenges}
+                  onChange={(e) => handleInputChange('challenges', e.target.value)}
+                  placeholder="Describe any difficulties or obstacles..."
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="solutions">Solutions & Approaches</Label>
+                <Textarea
+                  id="solutions"
+                  value={formData.solutions}
+                  onChange={(e) => handleInputChange('solutions', e.target.value)}
+                  placeholder="How did you address the challenges..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Reflection */}
+            <div className="space-y-2">
+              <Label htmlFor="reflection">Daily Reflection</Label>
+              <Textarea
+                id="reflection"
+                value={formData.reflection}
+                onChange={(e) => handleInputChange('reflection', e.target.value)}
+                placeholder="Reflect on your learning experience, what went well, areas for improvement..."
+                rows={3}
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                <Save className="w-4 h-4 mr-2" />
+                Save Log Entry
+              </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Recent Log Entries */}
-      <Card>
+      {/* Recent Entries Preview */}
+      <Card className="border border-slate-200 dark:border-slate-700">
         <CardHeader>
-          <CardTitle>Recent Log Entries</CardTitle>
-          <CardDescription>
-            Your latest activity logs ({logs.length} entries)
-          </CardDescription>
+          <CardTitle className="text-lg">Recent Log Entries</CardTitle>
+          <CardDescription>Your latest activity logs</CardDescription>
         </CardHeader>
         <CardContent>
-          {logs.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
-              <Clipboard className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>No log entries yet</p>
-              <p className="text-sm">Start by adding your first log entry above</p>
-            </div>
-          ) : (
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {logs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-medium text-violet-600">
-                          {new Date(log.date).toLocaleDateString()}
-                        </span>
-                        {log.time && (
-                          <span className="text-sm text-slate-500">
-                            {log.time}
-                          </span>
-                        )}
-                        {log.category && (
-                          <span className="text-xs px-2 py-1 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 rounded-full">
-                            {log.category}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-slate-900 dark:text-white mb-2">
-                        {log.activity}
-                      </p>
-                      {log.skills && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                          <span className="font-medium">Skills:</span> {log.skills}
-                        </p>
-                      )}
-                      {log.challenges && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                          <span className="font-medium">Challenges:</span> {log.challenges}
-                        </p>
-                      )}
-                      {log.solutions && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          <span className="font-medium">Solutions:</span> {log.solutions}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEdit(log)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(log.id!)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">No log entries yet</p>
+            <p className="text-xs">Your saved entries will appear here</p>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -8,7 +8,7 @@ import { LogEntryForm } from '@/components/LogEntryForm'
 import { MonthlyReportComponent } from '@/components/MonthlyReportComponent'
 import { FinalReportForm } from '@/components/FinalReportForm'
 import { ProjectForm } from '@/components/ProjectForm'
-import { GithubForm } from '@/components/GithubForm'
+import { DocumentViewer } from '@/components/DocumentViewer'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -20,6 +20,7 @@ export default function Home() {
     { id: 'monthly-reports', label: 'Monthly Reports', icon: FileText, color: 'text-emerald-600' },
     { id: 'final-report', label: 'Final Report', icon: FileText, color: 'text-amber-600' },
     { id: 'project', label: 'Project Docs', icon: FolderTree, color: 'text-indigo-600' },
+    { id: 'guidelines', label: 'Guidelines', icon: BookOpen, color: 'text-purple-600' },
     { id: 'github', label: 'GitHub', icon: Github, color: 'text-slate-700' },
   ]
 
@@ -130,6 +131,7 @@ export default function Home() {
           {activeTab === 'monthly-reports' && <MonthlyReportsContent />}
           {activeTab === 'final-report' && <FinalReportContent />}
           {activeTab === 'project' && <ProjectContent />}
+          {activeTab === 'guidelines' && <GuidelinesContent />}
           {activeTab === 'github' && <GithubContent />}
         </main>
       </div>
@@ -507,6 +509,14 @@ function ProjectContent() {
       </div>
 
       <ProjectForm studentId={demoStudentId} />
+    </div>
+  )
+}
+
+function GuidelinesContent() {
+  return (
+    <div className="space-y-6">
+      <DocumentViewer />
     </div>
   )
 }

@@ -231,10 +231,10 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Projects</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">3</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.projects}</p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center mt-1">
                   <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1"></span>
-                  2 in progress
+                  {stats.projects > 0 ? `${stats.projects} documented` : 'No projects yet'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
@@ -243,9 +243,13 @@ function DashboardContent() {
             </div>
             {/* Progress rings */}
             <div className="mt-4 flex space-x-2">
-              <div className="w-8 h-8 rounded-full border-2 border-amber-200 dark:border-amber-800 border-t-amber-500 dark:border-t-amber-400"></div>
-              <div className="w-8 h-8 rounded-full border-2 border-amber-200 dark:border-amber-800 border-t-amber-500 dark:border-t-amber-400 rotate-45"></div>
-              <div className="w-8 h-8 rounded-full border-2 border-amber-500 dark:border-amber-400"></div>
+              {[...Array(Math.max(3, stats.projects))].map((_, i) => (
+                <div key={i} className={`w-8 h-8 rounded-full border-2 ${
+                  i < stats.projects 
+                    ? 'border-amber-500 dark:border-amber-400' 
+                    : 'border-amber-200 dark:border-amber-800'
+                }`}></div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -255,13 +259,9 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Active</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">45</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.daysActive}</p>
                 <p className="text-xs text-violet-600 dark:text-violet-400 flex items-center mt-1">
-                  <span className="inline-block w-2 h-2 bg-violet-500 rounded-full mr-1"></span>
-                  89% attendance
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center">
+                  <span className="inl2 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center">
                 <Activity className="w-6 h-6 text-violet-600 dark:text-violet-400" />
               </div>
             </div>

@@ -10,6 +10,7 @@ import { FinalReportForm } from '@/components/FinalReportForm'
 import { ProjectForm } from '@/components/ProjectForm'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { AppProvider, useApp } from '@/contexts/AppContext'
+import { ToastContainer } from '@/components/ui/toast'
 
 function HomeContent() {
   const [activeTab, setActiveTab] = useState('dashboard')

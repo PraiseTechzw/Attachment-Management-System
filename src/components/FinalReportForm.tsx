@@ -11,7 +11,7 @@ import { FileText, Download, Upload, CheckCircle, AlertCircle } from 'lucide-rea
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useApp } from '@/contexts/AppContext'
-import { showToast } from '@/components/ui/toast'
+import { useToast } from '@/hooks/use-toast'
 
 interface FinalReportFormProps {
   studentId?: string

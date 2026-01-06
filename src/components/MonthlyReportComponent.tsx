@@ -9,12 +9,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FileText, Download, Calendar, TrendingUp, Target, Award } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { useApp } from '@/contexts/AppContext'
 
 interface MonthlyReportProps {
-  studentId: string
+  studentId?: string
 }
 
-export function MonthlyReportComponent({ studentId }: MonthlyReportProps) {
+export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyReportProps) {
+  const { studentId, refreshStats } = useApp()
+  const actualStudentId = propStudentId || studentId
   const [reportData, setReportData] = useState({
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),

@@ -112,6 +112,7 @@ Generated on: ${new Date().toLocaleDateString()}
 
       if (response.ok) {
         setGeneratedReport(report)
+        await refreshStats()
         console.log('Monthly report saved successfully')
       } else {
         console.error('Failed to save monthly report')

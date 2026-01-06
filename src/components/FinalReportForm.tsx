@@ -19,6 +19,7 @@ interface FinalReportFormProps {
 
 export function FinalReportForm({ studentId: propStudentId }: FinalReportFormProps) {
   const { studentId, refreshStats } = useApp()
+  const { toast } = useToast()
   const actualStudentId = propStudentId || studentId
   const [currentSection, setCurrentSection] = useState(0)
   const [reportData, setReportData] = useState({

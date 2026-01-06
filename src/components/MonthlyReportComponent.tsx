@@ -6,24 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FileText, Download, Calendar, BookOpen, Wand2, Inbox } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
-<<<<<<< HEAD
-import { useToast } from '@/hooks/use-toast'
-=======
 import { Log, Report } from '@/lib/types'
 import ReactMarkdown from 'react-markdown'
->>>>>>> fc68023 ( have updated the AI's instructions to ensure that all generated monthly reports strictly follow the detailed guidelines you've provided. The AI will now produce a well-structured report that includes a cover page, introduction, detailed activities, challenges, in-depth analysis, and a conclusion, and each report will flow logically from the previous month's activities)
+import { useToast } from '@/components/ui/use-toast'
+import { Label } from '@/components/ui/label'
 
 interface MonthlyReportProps {
   studentId?: string
 }
 
 export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyReportProps) {
-<<<<<<< HEAD
   const { studentId, refreshStats } = useApp()
   const { toast } = useToast()
-=======
-  const { studentId } = useApp()
->>>>>>> fc68023 ( have updated the AI's instructions to ensure that all generated monthly reports strictly follow the detailed guidelines you've provided. The AI will now produce a well-structured report that includes a cover page, introduction, detailed activities, challenges, in-depth analysis, and a conclusion, and each report will flow logically from the previous month's activities)
   const actualStudentId = propStudentId || studentId
 
   const [month, setMonth] = useState(new Date().getMonth() + 1)
@@ -55,7 +49,7 @@ export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyRepo
   const fetchReports = async () => {
     if (!actualStudentId) return;
     try {
-      const response = await fetch(`/api/reports?studentId=${actualStudentId}`);
+      const response = await fetch(`/api/monthly-reports?studentId=${actualStudentId}`);
       if (response.ok) {
         const data = await response.json();
         setReports(data);
@@ -93,6 +87,7 @@ export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyRepo
         // Optionally save the report and refresh the list
         await saveReport(data.report);
         await fetchReports();
+        await refreshStats();
       } else {
         setError(data.error || 'Failed to generate report');
       }
@@ -115,33 +110,6 @@ export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyRepo
           filename: `Monthly_Report_${months.find(m => m.value === month)?.name}_${year}.md`,
           content: reportContent,
           type: 'report',
-<<<<<<< HEAD
-          studentId: actualStudentId
-        })
-      })
-
-      if (response.ok) {
-        setGeneratedReport(report)
-        await refreshStats()
-        console.log('Monthly report saved successfully')
-      } else {
-        console.error('Failed to save monthly report')
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to save report. Please try again.",
-        })
-      }
-    } catch (error) {
-      console.error('Error saving monthly report:', error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Error saving report. Please try again.",
-      })
-    } finally {
-      setIsGenerating(false)
-=======
           studentId: actualStudentId,
           month,
           year,
@@ -149,12 +117,20 @@ export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyRepo
       });
   
       if (!response.ok) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save report. Please try again.",
+        })
         throw new Error('Failed to save the report.');
       }
     } catch (error) {
       console.error('Error saving report:', error);
-      // Handle the error appropriately in the UI
->>>>>>> fc68023 ( have updated the AI's instructions to ensure that all generated monthly reports strictly follow the detailed guidelines you've provided. The AI will now produce a well-structured report that includes a cover page, introduction, detailed activities, challenges, in-depth analysis, and a conclusion, and each report will flow logically from the previous month's activities)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving report. Please try again.",
+      })
     }
   };
 
@@ -220,8 +196,8 @@ export function MonthlyReportComponent({ studentId: propStudentId }: MonthlyRepo
               {logs.length > 0 ? (
                 logs.map(log => (
                   <div key={log.id} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <p className="font-semibold text-sm">{new Date(log.createdAt).toLocaleDateString()}</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">{log.content.substring(0, 150)}...</p>
+                    <p className="font-semibold text-sm">{new Date(log.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{log.activities.substring(0, 150)}...</p>
                   </div>
                 ))
               ) : (

@@ -75,3 +75,21 @@ export function validatePassword(email: string, password: string): User | null {
   }
   return null
 }
+
+export function registerUser(userData: { email: string; password: string; name?: string; studentId?: string; program?: string; year?: string }): User | null {
+  const existing = findUserByEmail(userData.email)
+  if (existing) return null
+
+  const newUser: User = {
+    id: (mockUsers.length + 1).toString(),
+    email: userData.email,
+    name: userData.name || userData.email.split('@')[0],
+    studentId: userData.studentId || `student-${Date.now()}`,
+    program: userData.program || 'Undeclared',
+    year: userData.year || '1'
+  }
+
+  // Note: storing plain password is insecure; this is a mock for dev only
+  ;(mockUsers as any).push(newUser)
+  return newUser
+}

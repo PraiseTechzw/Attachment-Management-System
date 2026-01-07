@@ -156,7 +156,7 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
         const [weeklyRes, skillsRes, tasksRes] = await Promise.all([
           fetch('/api/analytics/weekly-activity'),
           fetch('/api/analytics/skills-progress'),
-          fetch('/api/tasks')
+          fetch('/api/tasks/suggest')
         ])
 
         if (!mounted) return

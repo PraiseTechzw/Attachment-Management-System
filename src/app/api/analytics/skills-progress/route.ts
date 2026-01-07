@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 import { getAuthFromRequest } from '@/lib/auth'
-import { listDocumentsInUpload } from '@/lib/document-utils'
-import * as fs from 'fs'
-import * as path from 'path'
+
+const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,14 +13,14 @@ export async function GET(request: NextRequest) {
     const qStudentId = url.searchParams.get('studentId')
     const studentId = auth?.studentId || qStudentId || process.env.DEV_DEMO_STUDENT_ID || 'demo-student-id'
 
-    // Get all log documents for the (resolved) student
-    const documents = listDocumentsInUpload()
-    const userLogs = documents.filter(doc => 
-      doc.type === 'log' && doc.name.includes(studentId)
-    )
+    // Query LogEntry records from database for this student
+    const logEntries = await prisma.logEntry.findMany({
+      where: { studentId },
+      select: { skills: true }
+    })
 
-    // Extract skills from log entries
-    const skillsData = await extractSkillsFromLogs(userLogs)
+    // Extract and aggregate skills from database records
+    const skillsData = extractSkillsFromLogEntries(logEntries)
 
     return NextResponse.json(skillsData)
 
@@ -30,47 +30,19 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function extractSkillsFromLogs(logs: any[]) {
+function extractSkillsFromLogEntries(logEntries: any[]) {
   const skillsMap = new Map<string, number>()
   
-  // Default skills with base progress
-  const defaultSkills = [
-    'Frontend Development',
-    'Backend Development', 
-    'Database Management',
-    'Project Management',
-    'Documentation',
-    'Problem Solving',
-    'Communication',
-    'Teamwork'
-  ]
-
-  // Initialize with default skills
-  defaultSkills.forEach(skill => {
-    skillsMap.set(skill, Math.floor(Math.random() * 30) + 10) // Base 10-40%
-  })
-
-  // Process log files to extract mentioned skills
-  for (const log of logs) {
-    try {
-      const fullPath = path.join(process.cwd(), log.path)
-      if (fs.existsSync(fullPath)) {
-        const content = fs.readFileSync(fullPath, 'utf8')
-        
-        // Extract skills from the content
-        const skillsSection = extractSkillsSection(content)
-        if (skillsSection) {
-          const mentionedSkills = parseSkills(skillsSection)
-          mentionedSkills.forEach(skill => {
-            const current = skillsMap.get(skill) || 0
-            skillsMap.set(skill, Math.min(100, current + 5)) // Increase by 5% per mention, max 100%
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Error reading log file:', error)
+  // Parse skills from all log entries
+  logEntries.forEach(entry => {
+    if (entry.skills) {
+      const skillsList = parseSkillsFromText(entry.skills)
+      skillsList.forEach(skill => {
+        const current = skillsMap.get(skill) || 0
+        skillsMap.set(skill, Math.min(100, current + 5)) // Increase by 5% per mention, max 100%
+      })
     }
-  }
+  })
 
   // Convert to array format with colors
   const colors = [
@@ -84,18 +56,26 @@ async function extractSkillsFromLogs(logs: any[]) {
     'bg-pink-500'
   ]
 
-  const skillsArray = Array.from(skillsMap.entries()).map(([skill, progress], index) => ({
-    skill,
-    progress: Math.round(progress),
-    color: colors[index % colors.length]
-  }))
+  const skillsArray = Array.from(skillsMap.entries())
+    .map(([skill, progress], index) => ({
+      skill,
+      progress: Math.round(progress),
+      color: colors[index % colors.length]
+    }))
+    .sort((a, b) => b.progress - a.progress) // Sort by progress descending
+    .slice(0, 8) // Return top 8 skills
 
-  return skillsArray.slice(0, 8) // Return top 8 skills
+  return skillsArray
 }
 
-function extractSkillsSection(content: string): string | null {
-  const skillsMatch = content.match(/SKILLS & KNOWLEDGE GAINED:\s*(.*?)(?=\n[A-Z]|\n\n|$)/s)
-  return skillsMatch ? skillsMatch[1].trim() : null
+function parseSkillsFromText(text: string): string[] {
+  // Split by common delimiters and clean up
+  const skills = text
+    .split(/[,;:\n\-\|]/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0 && s.length < 50) // Filter out empty or unreasonably long entries
+  
+  return skills
 }
 
 function parseSkills(skillsText: string): string[] {

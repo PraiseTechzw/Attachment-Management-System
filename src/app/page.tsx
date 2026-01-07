@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, FileText, FolderTree, Github, Clipboard, Activity, Settings, User, Zap, Menu, X, Home as HomeIcon } from 'lucide-react'
@@ -15,6 +16,42 @@ import { Toaster } from '@/components/ui/toaster'
 function HomeContent() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { logout, user, isLoading } = useApp()
+  const router = useRouter()
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/auth/login')
+    }
+  }, [user, isLoading, router])
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <Activity className="w-8 h-8 animate-spin mx-auto mb-4 text-slate-400" />
+          <p className="text-slate-500">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render dashboard if not authenticated
+  if (!user) {
+    return null
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+    logout()
+    router.push('/auth/login')
+  }
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: HomeIcon, color: 'text-violet-600' },
@@ -75,20 +112,28 @@ function HomeContent() {
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-3 border-t border-slate-200 dark:border-slate-700">
+          <div className="p-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
             <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700">
-              <div className="w-6 h-6 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-3 h-3 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
-                  Demo Student
+                  {user?.name || 'Student'}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  {user?.email || 'Not logged in'}
                 </p>
               </div>
-              <button className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600">
-                <Settings className="w-3 h-3 text-slate-500" />
-              </button>
             </div>
+            <Button 
+              onClick={handleLogout}
+              variant="outline" 
+              size="sm" 
+              className="w-full text-xs"
+            >
+              Logout
+            </Button>
           </div>
         </div>
       </div>

@@ -4,23 +4,6 @@ import { getAuthFromRequest, findUserById } from '@/lib/auth'
 export async function GET(request: NextRequest) {
   try {
     const auth = getAuthFromRequest(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const user = await findUserById(auth.userId)
-    if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-    return NextResponse.json({ user })
-  } catch (error) {
-    console.error('Auth me error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthFromRequest, findUserById } from '@/lib/auth'
-
-export async function GET(request: NextRequest) {
-  try {
-    const auth = getAuthFromRequest(request)
     if (!auth) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -28,7 +11,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const user = findUserById(auth.userId)
+    const user = await findUserById(auth.userId)
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -42,8 +25,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         studentId: user.studentId,
-        program: user.program,
-        year: user.year
+        program: user.program
       }
     })
 

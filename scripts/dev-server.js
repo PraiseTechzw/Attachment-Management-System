@@ -4,10 +4,25 @@ const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
 const net = require('net')
+const os = require('os')
 
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
+
+// Function to get local IP address
+function getLocalIP() {
+  const interfaces = os.networkInterfaces()
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal and non-IPv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address
+      }
+    }
+  }
+  return 'localhost'
+}
 
 // Function to check if port is available
 function isPortAvailable(port) {
@@ -59,9 +74,11 @@ async function startServer() {
       handle(req, res, parsedUrl)
     })
     
-    server.listen(port, (err) => {
+    server.listen(port, '0.0.0.0', (err) => {
       if (err) throw err
+      const localIP = getLocalIP()
       console.log(`✅ Ready on http://localhost:${port}`)
+      console.log(`📱 Mobile/Network access: http://${localIP}:${port}`)
       console.log(`📝 Logs are being written to dev.log`)
     })
     

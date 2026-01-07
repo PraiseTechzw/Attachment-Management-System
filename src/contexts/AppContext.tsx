@@ -53,20 +53,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshStats = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/documents')
+      if (!token) return;
+      const response = await fetch('/api/documents', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       if (response.ok) {
         const documents = await response.json()
-        
         const logs = documents.filter((doc: any) => doc.type === 'log').length
         const reports = documents.filter((doc: any) => doc.type === 'report').length
         const projects = documents.filter((doc: any) => doc.type === 'project').length
-        
         setStats({
           totalLogs: logs,
           reports: reports,
           projects: projects,
           daysActive: logs
         })
+      } else if (response.status === 401) {
+        setStats({ totalLogs: 0, reports: 0, projects: 0, daysActive: 0 })
+        setUser(null)
+        setToken(null)
+        try { localStorage.removeItem('auth') } catch {}
+        console.error('Unauthorized: Please log in again.')
       }
     } catch (error) {
       console.error('Error loading stats:', error)

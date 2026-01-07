@@ -220,9 +220,15 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
                 <Clipboard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            {/* Mini chart */}
+            {/* Mini chart - derived from weeklyData or stats */}
             <div className="mt-4 flex items-end space-x-1 h-8">
-              {[4, 6, 8, 5, 9, 7, Math.max(12, stats.totalLogs)].map((height, i) => (
+              {((weeklyData.length > 0 ? weeklyData.map(d => d.value) : [])
+                .concat([]) // ensure array
+                .slice(-7).length > 0 ? (weeklyData.map(d => d.value).slice(-7)) : (
+                  // fallback synthetic distribution based on stats.totalLogs
+                  Array.from({ length: 7 }, (_, i) => Math.max(1, Math.round(stats.totalLogs / (7 - i || 1))))
+                )
+              ).map((height, i) => (
                 <div key={i} className="bg-blue-200 dark:bg-blue-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
               ))}
             </div>
@@ -244,9 +250,14 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
                 <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            {/* Mini chart */}
+            {/* Mini chart - derived from reports count */}
             <div className="mt-4 flex items-end space-x-1 h-8">
-              {[2, 3, 1, 4, 2, 5, Math.max(8, stats.reports)].map((height, i) => (
+              {Array.from({ length: 7 }, (_, i) => {
+                // distribute reports across 7 small bars, heavier at the end
+                const base = Math.floor(stats.reports / 7)
+                const extra = i === 6 ? stats.reports % 7 : 0
+                return Math.max(1, base + extra)
+              }).map((height, i) => (
                 <div key={i} className="bg-emerald-200 dark:bg-emerald-800 rounded-sm flex-1" style={{height: `${height * 2}px`}}></div>
               ))}
             </div>

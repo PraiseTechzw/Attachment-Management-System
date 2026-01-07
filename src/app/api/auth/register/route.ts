@@ -10,12 +10,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    const existing = findUserByEmail(email)
+    const existing = await findUserByEmail(email)
     if (existing) {
       return NextResponse.json({ error: 'User already exists' }, { status: 409 })
     }
 
-    const user = registerUser({ email, password, name, studentId, program, year })
+    const user = await registerUser({ email, password, name, studentId, program, year })
     if (!user) {
       return NextResponse.json({ error: 'Failed to register user' }, { status: 500 })
     }

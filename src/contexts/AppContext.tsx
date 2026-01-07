@@ -77,16 +77,44 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // load auth from storage
+    let initialToken: string | null = null
     try {
       const raw = localStorage.getItem('auth')
       if (raw) {
         const parsed = JSON.parse(raw)
+        initialToken = parsed.token
         setToken(parsed.token)
         setUser(parsed.user)
       }
     } catch (e) {}
 
-    refreshStats()
+    // If token is present, verify and fetch current user
+    async function validate() {
+      if (!initialToken) {
+        refreshStats()
+        return
+      }
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${initialToken}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        } else {
+          // invalid token
+          setToken(null)
+          setUser(null)
+          try { localStorage.removeItem('auth') } catch {}
+        }
+      } catch (e) {
+        console.error('Error validating token', e)
+      } finally {
+        refreshStats()
+      }
+    }
+
+    validate()
   }, [])
 
   return (

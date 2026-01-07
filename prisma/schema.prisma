@@ -27,6 +27,8 @@ model Student {
   finalReport          FinalReport?
   project              Project?
   githubIntegration    GithubIntegration?
+  tasks                Task[]
+  attachments          Attachment[]
 }
 
 model Organization {
@@ -137,4 +139,33 @@ model GithubIntegration {
   updatedAt         DateTime @updatedAt
 
   student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+/// Additional models for full app functionality
+model Task {
+  id         String   @id @default(cuid())
+  studentId  String
+  title      String
+  description String?
+  dueDate    DateTime?
+  priority   String   @default("medium") // low, medium, high
+  status     String   @default("pending") // pending, done, cancelled
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, status])
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  studentId  String
+  filename   String
+  path       String
+  type       String?
+  size       Int?
+  createdAt  DateTime @default(now())
+
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }

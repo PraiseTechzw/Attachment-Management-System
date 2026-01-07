@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
 export interface User {
@@ -8,8 +11,8 @@ export interface User {
   email: string
   name: string
   studentId: string
-  program: string
-  year: string
+  program: string | null
+  year: string | null
 }
 
 export interface AuthToken {
@@ -48,48 +51,70 @@ export function getAuthFromRequest(request: NextRequest): AuthToken | null {
   return verifyToken(token)
 }
 
-// Mock user database - in production, use a real database
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'demo@student.edu',
-    name: 'Demo Student',
-    studentId: 'demo-student-id',
-    program: 'Computer Science',
-    year: '3'
+export async function findUserByEmail(email: string): Promise<User | null> {
+  const student = await prisma.student.findUnique({ where: { email } })
+  if (!student) return null
+  return {
+    id: student.id,
+    email: student.email,
+    name: student.name,
+    studentId: student.studentNumber || student.id,
+    program: student.program || null,
+    year: student.updatedAt ? String(student.updatedAt.getFullYear()) : null
   }
-]
-
-export function findUserByEmail(email: string): User | null {
-  return mockUsers.find(user => user.email === email) || null
 }
 
-export function findUserById(id: string): User | null {
-  return mockUsers.find(user => user.id === id) || null
-}
-
-export function validatePassword(email: string, password: string): User | null {
-  // In production, hash and compare passwords properly
-  if (email === 'demo@student.edu' && password === 'demo123') {
-    return findUserByEmail(email)
+export async function findUserById(id: string): Promise<User | null> {
+  const student = await prisma.student.findUnique({ where: { id } })
+  if (!student) return null
+  return {
+    id: student.id,
+    email: student.email,
+    name: student.name,
+    studentId: student.studentNumber || student.id,
+    program: student.program || null,
+    year: student.updatedAt ? String(student.updatedAt.getFullYear()) : null
   }
-  return null
 }
 
-export function registerUser(userData: { email: string; password: string; name?: string; studentId?: string; program?: string; year?: string }): User | null {
-  const existing = findUserByEmail(userData.email)
+export async function validatePassword(email: string, password: string): Promise<User | null> {
+  const student = await prisma.student.findUnique({ where: { email } })
+  if (!student) return null
+  const ok = await bcrypt.compare(password, student.password)
+  if (!ok) return null
+  return {
+    id: student.id,
+    email: student.email,
+    name: student.name,
+    studentId: student.studentNumber || student.id,
+    program: student.program || null,
+    year: student.updatedAt ? String(student.updatedAt.getFullYear()) : null
+  }
+}
+
+export async function registerUser(userData: { email: string; password: string; name?: string; studentId?: string; program?: string; year?: string }) {
+  const existing = await prisma.student.findUnique({ where: { email: userData.email } })
   if (existing) return null
 
-  const newUser: User = {
-    id: (mockUsers.length + 1).toString(),
-    email: userData.email,
-    name: userData.name || userData.email.split('@')[0],
-    studentId: userData.studentId || `student-${Date.now()}`,
-    program: userData.program || 'Undeclared',
-    year: userData.year || '1'
-  }
+  const hashed = await bcrypt.hash(userData.password, 10)
 
-  // Note: storing plain password is insecure; this is a mock for dev only
-  ;(mockUsers as any).push(newUser)
-  return newUser
+  const student = await prisma.student.create({
+    data: {
+      email: userData.email,
+      password: hashed,
+      name: userData.name || userData.email.split('@')[0],
+      studentNumber: userData.studentId,
+      program: userData.program,
+      // year left null or set from input
+    }
+  })
+
+  return {
+    id: student.id,
+    email: student.email,
+    name: student.name,
+    studentId: student.studentNumber || student.id,
+    program: student.program || null,
+    year: student.updatedAt ? String(student.updatedAt.getFullYear()) : null
+  }
 }

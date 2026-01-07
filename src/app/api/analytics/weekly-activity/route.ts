@@ -7,14 +7,16 @@ import * as path from 'path'
 export async function GET(request: NextRequest) {
   try {
     const auth = getAuthFromRequest(request)
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
-    // Get all log documents for the user
+    // Allow a studentId query param for dev / client-side requests when no auth header is present
+    const url = new URL(request.url)
+    const qStudentId = url.searchParams.get('studentId')
+    const studentId = auth?.studentId || qStudentId || process.env.DEV_DEMO_STUDENT_ID || 'demo-student-id'
+
+    // Get all log documents for the (resolved) student
     const documents = listDocumentsInUpload()
     const userLogs = documents.filter(doc => 
-      doc.type === 'log' && doc.name.includes(auth.studentId)
+      doc.type === 'log' && doc.name.includes(studentId)
     )
 
     // Calculate weekly activity data

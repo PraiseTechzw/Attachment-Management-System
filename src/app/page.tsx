@@ -147,14 +147,16 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
 
   const [weeklyData, setWeeklyData] = useState<{day: string, value: number, color: string}[]>([])
   const [skillsData, setSkillsData] = useState<{skill: string, progress: number, color: string}[]>([])
+  const [tasksData, setTasksData] = useState<{id:number, task: string, due: string, priority: string}[]>([])
 
   useEffect(() => {
     let mounted = true
     async function fetchAnalytics() {
       try {
-        const [weeklyRes, skillsRes] = await Promise.all([
+        const [weeklyRes, skillsRes, tasksRes] = await Promise.all([
           fetch('/api/analytics/weekly-activity'),
-          fetch('/api/analytics/skills-progress')
+          fetch('/api/analytics/skills-progress'),
+          fetch('/api/tasks')
         ])
 
         if (!mounted) return
@@ -171,6 +173,13 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
           setSkillsData(Array.isArray(data) ? data : [])
         } else {
           console.error('Failed fetching skills progress')
+        }
+
+        if (tasksRes.ok) {
+          const data = await tasksRes.json()
+          setTasksData(Array.isArray(data) ? data : [])
+        } else {
+          console.error('Failed fetching tasks')
         }
       } catch (err) {
         console.error('Error fetching analytics:', err)
@@ -492,12 +501,8 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-3">
-              {[
-                { task: 'Submit weekly report', due: 'Tomorrow', priority: 'high' },
-                { task: 'Complete project milestone', due: 'In 3 days', priority: 'medium' },
-                { task: 'Update documentation', due: 'Next week', priority: 'low' }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+              {(tasksData.length > 0 ? tasksData : []).map((item) => (
+                <div key={item.id} className="flex items-center space-x-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                   <div className={`w-2 h-2 rounded-full ${
                     item.priority === 'high' ? 'bg-red-500' : 
                     item.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
@@ -508,6 +513,9 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
                   </div>
                 </div>
               ))}
+              {tasksData.length === 0 && (
+                <div className="text-center py-4 text-slate-500 dark:text-slate-400">No upcoming tasks</div>
+              )}
             </div>
           </CardContent>
         </Card>

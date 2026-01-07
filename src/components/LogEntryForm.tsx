@@ -59,27 +59,56 @@ export function LogEntryForm({ studentId: propStudentId }: LogEntryFormProps) {
   }
 
   const handleAISuggestion = (suggestion: string) => {
-    const activitiesMatch = suggestion.match(/\*\*Activities Performed:\*\*\n([\s\S]*?)\n\n/);
-    const skillsMatch = suggestion.match(/\*\*Skills & Knowledge Gained:\*\*\n([\s\S]*?)\n\n/);
-    const challengesMatch = suggestion.match(/\*\*Challenges Encountered:\*\*\n([\s\S]*?)\n\n/);
-    const solutionsMatch = suggestion.match(/\*\*Solutions & Approaches:\*\*\n([\s\S]*?)$/);
+    const descriptionMatch = suggestion.match(/\*\*Detailed Description:\*\*\n([\s\S]*?)\n\n/);
+    const skillsMatch = suggestion.match(/\*\*Skills & Knowledge Applied:\*\*\n([\s\S]*?)\n\n/);
+    const challengesMatch = suggestion.match(/\*\*Challenges & Resolutions:\*\*\n([\s\S]*?)\n\n/);
+    const learningsMatch = suggestion.match(/\*\*Key Learnings & Takeaways:\*\*\n([\s\S]*?)\n\n/);
+    const impactMatch = suggestion.match(/\*\*Impact:\*\*\n([\s\S]*?)$/);
 
     const newFormData: Partial<typeof formData> = {};
-    if (activitiesMatch && activitiesMatch[1]) {
-        newFormData.activities = activitiesMatch[1].replace(/- /g, '').trim();
+
+    if (descriptionMatch && descriptionMatch[1]) {
+      newFormData.activities = descriptionMatch[1].trim();
     }
+
     if (challengesMatch && challengesMatch[1]) {
-        newFormData.challenges = challengesMatch[1].replace(/- /g, '').trim();
+      const challengeText = challengesMatch[1];
+      const challengeRes = challengeText.split('- **Resolution:**');
+      const challenge = challengeRes[0].replace('- **Challenge:**', '').trim();
+      newFormData.challenges = challenge;
+      if (challengeRes.length > 1) {
+        newFormData.solutions = challengeRes[1].trim();
+      }
     }
-    if (solutionsMatch && solutionsMatch[1]) {
-        newFormData.solutions = solutionsMatch[1].replace(/- /g, '').trim();
+
+    let reflectionText = '';
+    if (learningsMatch && learningsMatch[1]) {
+      reflectionText += learningsMatch[1].trim();
     }
-    
+    if (impactMatch && impactMatch[1]) {
+      reflectionText += `\n\n**Impact:**\n${impactMatch[1].trim()}`;
+    }
+    if (reflectionText) {
+      newFormData.reflection = reflectionText;
+    }
+
     setFormData(prev => ({ ...prev, ...newFormData }));
 
     if (skillsMatch && skillsMatch[1]) {
-        const parsedSkills = skillsMatch[1].split('\n').map(s => s.replace(/- /g, '').trim()).filter(Boolean);
-        setSkills(prev => [...new Set([...prev, ...parsedSkills])]);
+      const parsedSkills = skillsMatch[1]
+        .split('\n')
+        .map(s => s.replace(/^- /g, '').trim()) // remove leading dash
+        .map(s => {
+          // Extracts skill from "**Skill:** Description"
+          const match = s.match(/\*\*(.*?):\*\*/);
+          if (match && match[1]) {
+            return match[1];
+          }
+          // Extracts skill from "- Skill"
+          return s.replace(/^- /g, '').trim();
+        })
+        .filter(Boolean);
+      setSkills(prev => [...new Set([...prev, ...parsedSkills])]);
     }
   };
 

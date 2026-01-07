@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AppProvider } from "@/contexts/AppContext";
+import { Button } from "@/components/ui/button";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +49,21 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <AppProvider>
+          <header className="flex justify-between items-center p-4 border-b">
+            <h1 className="text-xl font-bold">Log Management System</h1>
+            <div>
+              <Link href="/" passHref>
+                <Button variant="outline" asChild>
+                  <a>Dashboard</a>
+                </Button>
+              </Link>
+              <Link href="/logs" passHref>
+                <Button variant="outline" asChild>
+                  <a className="ml-2">Logs</a>
+                </Button>
+              </Link>
+            </div>
+          </header>
           {children}
           <Toaster />
         </AppProvider>

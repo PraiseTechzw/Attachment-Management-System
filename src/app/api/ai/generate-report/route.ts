@@ -1,14 +1,25 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { getZaiInstance } from '@/lib/zai'
+import { zai } from '@/lib/zai'
+import { getAuthFromRequest, findUserById } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
-    const { studentId, month, year } = await req.json()
+    const auth = getAuthFromRequest(req)
+    if (!auth) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!studentId || !month || !year) {
+    const user = await findUserById(auth.userId)
+    if (!user || !user.studentId) {
+      return NextResponse.json({ error: "User not found or not linked to a student profile" }, { status: 404 });
+    }
+
+    const { month, year } = await req.json()
+
+    if (!month || !year) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -17,7 +28,7 @@ export async function POST(req: Request) {
 
     const logs = await prisma.log.findMany({
       where: {
-        studentId,
+        studentId: user.studentId,
         createdAt: {
           gte: startDate,
           lte: endDate,
@@ -32,11 +43,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No logs found for the selected period' }, { status: 404 })
     }
 
-    const zai = await getZaiInstance()
     const serializedLogs = logs.map(log => JSON.stringify(log)).join('\n\n');
 
     const stream = await zai.skills.LLM.chat({
-      model: 'claude-3-opus-20240229',
+      model: 'gemini-1.5-pro-latest',
       systemPrompt: `You are an expert in creating monthly industrial attachment reports for students. Your goal is to generate a comprehensive and professional report based on a collection of daily logs, following specific university guidelines.
 
 The report must be a continuation of the previous month's activities. Start by briefly mentioning the transition from the last month's work.

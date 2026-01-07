@@ -1,10 +1,9 @@
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getZaiInstance } from "@/lib/zai";
+import { zai } from "@/lib/zai";
 import { ChatMessage } from "z-ai-web-dev-sdk";
-
-const DEMO_STUDENT_ID = "demo-student-id"; // In a real app, you'd get this from the user's session
+import { getAuthFromRequest, findUserById } from "@/lib/auth";
 
 /**
  * A custom error class for API-related errors.
@@ -69,17 +68,23 @@ async function getContextForAi(studentId: string): Promise<string> {
  */
 export async function POST(req: Request) {
   try {
+    const auth = getAuthFromRequest(req);
+    if (!auth) {
+      throw new ApiError("Unauthorized", 401);
+    }
+
+    const user = await findUserById(auth.userId);
+    if (!user || !user.studentId) {
+      throw new ApiError("User not found or not linked to a student profile", 404);
+    }
+
     const { prompt: userPrompt } = await req.json();
 
     if (!userPrompt) {
       throw new ApiError("Prompt is required", 400);
     }
 
-    // Get the ZAI instance and student context concurrently
-    const [zai, studentContext] = await Promise.all([
-      getZaiInstance(),
-      getContextForAi(DEMO_STUDENT_ID),
-    ]);
+    const studentContext = await getContextForAi(user.studentId);
 
     const messages: ChatMessage[] = [
       {
@@ -93,6 +98,7 @@ export async function POST(req: Request) {
     ];
 
     const response = await zai.chat.completions.create({
+      model: 'gemini-1.5-pro-latest',
       messages,
       stream: false,
       thinking: { type: "disabled" },

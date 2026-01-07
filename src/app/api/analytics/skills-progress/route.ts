@@ -7,11 +7,16 @@ const prisma = new PrismaClient()
 export async function GET(request: NextRequest) {
   try {
     const auth = getAuthFromRequest(request)
+    
+    // Require authentication
+    if (!auth?.studentId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
-    // Allow a studentId query param for dev / client-side requests when no auth header is present
-    const url = new URL(request.url)
-    const qStudentId = url.searchParams.get('studentId')
-    const studentId = auth?.studentId || qStudentId || process.env.DEV_DEMO_STUDENT_ID || 'demo-student-id'
+    const studentId = auth.studentId
 
     // Query LogEntry records from database for this student
     const logEntries = await prisma.logEntry.findMany({

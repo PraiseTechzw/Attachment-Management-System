@@ -688,9 +688,5 @@ function GithubContent() {
 }
 
 export default function Home() {
-  return (
-    <AppProvider>
-      <HomeContent />
-    </AppProvider>
-  )
+  return <HomeContent />
 }

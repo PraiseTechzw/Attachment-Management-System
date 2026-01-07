@@ -32,7 +32,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<any | null>(null)
-  const studentId = user?.studentId || process.env.DEV_DEMO_STUDENT_ID || 'demo-student-id' // This comes from authentication
+  const studentId = user?.studentId || '' // Only use authenticated user's studentId
 
   const login = (newToken: string, newUser: any) => {
     try {

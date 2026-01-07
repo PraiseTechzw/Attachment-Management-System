@@ -1,63 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthFromRequest } from '@/lib/auth'
-import { listDocumentsInUpload } from '@/lib/document-utils'
-import * as fs from 'fs'
-import * as path from 'path'
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { getAuthFromRequest, findUserById } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+const prisma = new PrismaClient();
+
+export async function GET(req: Request) {
   try {
-    const auth = getAuthFromRequest(request)
-    
-    // Require authentication
-    if (!auth?.studentId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const auth = getAuthFromRequest(req);
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const studentId = auth.studentId
+    const user = await findUserById(auth.userId);
+    if (!user || !user.studentId) {
+      return NextResponse.json({ error: 'User not found or missing student ID' }, { status: 404 });
+    }
 
-    // Get all log documents for the (resolved) student
-    const documents = listDocumentsInUpload()
-    const userLogs = documents.filter(doc => 
-      doc.type === 'log' && doc.name.includes(studentId)
-    )
+    const logs = await prisma.log.findMany({
+      where: { studentId: user.studentId },
+      orderBy: { createdAt: 'desc' },
+      take: 50, // Fetch last 50 logs for the activity chart
+    });
 
-    // Calculate weekly activity data
-    const weeklyData = calculateWeeklyActivity(userLogs)
+    // Process data to get daily log counts
+    const activity = logs.reduce((acc, log) => {
+      const date = log.createdAt.toISOString().split('T')[0];
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    return NextResponse.json(weeklyData)
-
+    return NextResponse.json(activity);
   } catch (error) {
-    console.error('Error getting weekly activity:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Failed fetching weekly activity:', error);
+    return NextResponse.json({ error: 'Failed to fetch weekly activity' }, { status: 500 });
   }
-}
-
-function calculateWeeklyActivity(logs: any[]) {
-  const today = new Date()
-  const weekStart = new Date(today)
-  weekStart.setDate(today.getDate() - today.getDay()) // Start of week (Sunday)
-  
-  const weeklyData = [
-    { day: 'Sun', value: 0, color: 'bg-blue-300' },
-    { day: 'Mon', value: 0, color: 'bg-blue-500' },
-    { day: 'Tue', value: 0, color: 'bg-blue-500' },
-    { day: 'Wed', value: 0, color: 'bg-blue-500' },
-    { day: 'Thu', value: 0, color: 'bg-blue-500' },
-    { day: 'Fri', value: 0, color: 'bg-blue-500' },
-    { day: 'Sat', value: 0, color: 'bg-blue-300' }
-  ]
-
-  logs.forEach(log => {
-    const logDate = new Date(log.modified)
-    const daysDiff = Math.floor((logDate.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (daysDiff >= 0 && daysDiff < 7) {
-      weeklyData[daysDiff].value += 1
-    }
-  })
-
-  return weeklyData
 }

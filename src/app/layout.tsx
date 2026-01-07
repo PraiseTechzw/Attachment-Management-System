@@ -52,16 +52,12 @@ export default function RootLayout({
           <header className="flex justify-between items-center p-4 border-b">
             <h1 className="text-xl font-bold">Log Management System</h1>
             <div>
-              <Link href="/" passHref>
-                <Button variant="outline" asChild>
-                  <a>Dashboard</a>
-                </Button>
-              </Link>
-              <Link href="/logs" passHref>
-                <Button variant="outline" asChild>
-                  <a className="ml-2">Logs</a>
-                </Button>
-              </Link>
+              <Button asChild variant="outline">
+                <Link href="/">Dashboard</Link>
+              </Button>
+              <Button asChild variant="outline" className="ml-2">
+                <Link href="/logs">Logs</Link>
+              </Button>
             </div>
           </header>
           {children}

@@ -8,7 +8,7 @@ import { FileText, Download, Calendar, BookOpen, Wand2, Inbox } from 'lucide-rea
 import { useApp } from '@/contexts/AppContext'
 import { Log, Report } from '@/lib/types'
 import ReactMarkdown from 'react-markdown'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { Label } from '@/components/ui/label'
 
 interface MonthlyReportProps {

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/dev-server.js 2>&1 | tee dev.log",
+    "dev": "node scripts/dev-server.js",
+    "dev:log:ps": "powershell -NoProfile -Command \"node scripts/dev-server.js 2>&1 | Tee-Object -FilePath dev.log\"",
+    "dev:log": "bash -lc \"node scripts/dev-server.js 2>&1 | tee dev.log\"",
     "dev:port": "next dev -p",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",

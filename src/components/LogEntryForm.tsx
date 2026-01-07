@@ -10,10 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Clock, Plus, Save, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/contexts/AppContext'
-<<<<<<< HEAD
 import { useToast } from '@/hooks/use-toast'
-=======
->>>>>>> cff6396 (nnn)
 import { AILogSuggestion } from './AILogSuggestion'
 
 interface LogEntryFormProps {

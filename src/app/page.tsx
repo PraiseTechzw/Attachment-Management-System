@@ -145,6 +145,42 @@ function HomeContent() {
 function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const { stats, isLoading } = useApp()
 
+  const [weeklyData, setWeeklyData] = useState<{day: string, value: number, color: string}[]>([])
+  const [skillsData, setSkillsData] = useState<{skill: string, progress: number, color: string}[]>([])
+
+  useEffect(() => {
+    let mounted = true
+    async function fetchAnalytics() {
+      try {
+        const [weeklyRes, skillsRes] = await Promise.all([
+          fetch('/api/analytics/weekly-activity'),
+          fetch('/api/analytics/skills-progress')
+        ])
+
+        if (!mounted) return
+
+        if (weeklyRes.ok) {
+          const data = await weeklyRes.json()
+          setWeeklyData(Array.isArray(data) ? data : [])
+        } else {
+          console.error('Failed fetching weekly activity')
+        }
+
+        if (skillsRes.ok) {
+          const data = await skillsRes.json()
+          setSkillsData(Array.isArray(data) ? data : [])
+        } else {
+          console.error('Failed fetching skills progress')
+        }
+      } catch (err) {
+        console.error('Error fetching analytics:', err)
+      }
+    }
+
+    fetchAnalytics()
+    return () => { mounted = false }
+  }, [stats.totalLogs])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -294,19 +330,19 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
           </CardHeader>
           <CardContent className="pt-0">
             <div className="h-48 flex items-end justify-between space-x-2">
-              {[
-                { day: 'Mon', value: 8, color: 'bg-blue-500' },
-                { day: 'Tue', value: 12, color: 'bg-blue-500' },
-                { day: 'Wed', value: 6, color: 'bg-blue-500' },
-                { day: 'Thu', value: 15, color: 'bg-blue-500' },
-                { day: 'Fri', value: 10, color: 'bg-blue-500' },
-                { day: 'Sat', value: 4, color: 'bg-blue-300' },
-                { day: 'Sun', value: 2, color: 'bg-blue-300' }
-              ].map((item, i) => (
+              {(weeklyData.length > 0 ? weeklyData : [
+                { day: 'Sun', value: 0, color: 'bg-blue-300' },
+                { day: 'Mon', value: 0, color: 'bg-blue-500' },
+                { day: 'Tue', value: 0, color: 'bg-blue-500' },
+                { day: 'Wed', value: 0, color: 'bg-blue-500' },
+                { day: 'Thu', value: 0, color: 'bg-blue-500' },
+                { day: 'Fri', value: 0, color: 'bg-blue-500' },
+                { day: 'Sat', value: 0, color: 'bg-blue-300' }
+              ]).map((item, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div 
                     className={`w-full ${item.color} rounded-t-md transition-all hover:opacity-80`}
-                    style={{ height: `${item.value * 8}px` }}
+                    style={{ height: `${Math.max(2, item.value) * 8}px` }}
                   ></div>
                   <span className="text-xs text-slate-600 dark:text-slate-400 mt-2">{item.day}</span>
                 </div>
@@ -324,13 +360,7 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0 space-y-4">
-            {[
-              { skill: 'Frontend Development', progress: 85, color: 'bg-blue-500' },
-              { skill: 'Backend Development', progress: 70, color: 'bg-emerald-500' },
-              { skill: 'Database Management', progress: 60, color: 'bg-amber-500' },
-              { skill: 'Project Management', progress: 45, color: 'bg-violet-500' },
-              { skill: 'Documentation', progress: 90, color: 'bg-rose-500' }
-            ].map((item, i) => (
+            {(skillsData.length > 0 ? skillsData : []).map((item, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.skill}</span>

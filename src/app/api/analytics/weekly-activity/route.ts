@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'User not found or missing student ID' }, { status: 404 });
     }
 
-    const logs = await prisma.log.findMany({
+    const logs = await prisma.logEntry.findMany({
       where: { studentId: user.studentId },
       orderBy: { createdAt: 'desc' },
       take: 50, // Fetch last 50 logs for the activity chart
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 
     // Process data to get daily log counts
     const activity = logs.reduce((acc, log) => {
-      const date = log.createdAt.toISOString().split('T')[0];
+      const date = log.date.toISOString().split('T')[0];
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);

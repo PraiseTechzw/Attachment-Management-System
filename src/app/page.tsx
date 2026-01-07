@@ -188,7 +188,7 @@ function HomeContent() {
 }
 
 function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
-  const { stats, isLoading } = useApp()
+  const { stats, isLoading, token } = useApp()
 
   const [weeklyData, setWeeklyData] = useState<{day: string, value: number, color: string}[]>([])
   const [skillsData, setSkillsData] = useState<{skill: string, progress: number, color: string}[]>([])
@@ -197,11 +197,12 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
   useEffect(() => {
     let mounted = true
     async function fetchAnalytics() {
+      if (!token) return;
       try {
         const [weeklyRes, skillsRes, tasksRes] = await Promise.all([
-          fetch('/api/analytics/weekly-activity'),
-          fetch('/api/analytics/skills-progress'),
-          fetch('/api/tasks/suggest')
+          fetch('/api/analytics/weekly-activity', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/analytics/skills-progress', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/tasks/suggest', { headers: { Authorization: `Bearer ${token}` } })
         ])
 
         if (!mounted) return
@@ -209,6 +210,8 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
         if (weeklyRes.ok) {
           const data = await weeklyRes.json()
           setWeeklyData(Array.isArray(data) ? data : [])
+        } else if (weeklyRes.status === 401) {
+          console.error('Unauthorized: Please log in again.')
         } else {
           console.error('Failed fetching weekly activity')
         }
@@ -216,6 +219,8 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
         if (skillsRes.ok) {
           const data = await skillsRes.json()
           setSkillsData(Array.isArray(data) ? data : [])
+        } else if (skillsRes.status === 401) {
+          console.error('Unauthorized: Please log in again.')
         } else {
           console.error('Failed fetching skills progress')
         }
@@ -223,6 +228,8 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
         if (tasksRes.ok) {
           const data = await tasksRes.json()
           setTasksData(Array.isArray(data) ? data : [])
+        } else if (tasksRes.status === 401) {
+          console.error('Unauthorized: Please log in again.')
         } else {
           console.error('Failed fetching tasks')
         }
@@ -233,7 +240,7 @@ function DashboardContent({ setActiveTab }: { setActiveTab: (tab: string) => voi
 
     fetchAnalytics()
     return () => { mounted = false }
-  }, [stats.totalLogs])
+  }, [stats.totalLogs, token])
 
   if (isLoading) {
     return (

@@ -16,15 +16,18 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'User not found or missing student ID' }, { status: 404 });
     }
 
-    const logs = await prisma.log.findMany({
+    const logs = await prisma.logEntry.findMany({
       where: { studentId: user.studentId },
       select: { skills: true },
     });
 
+    // skills is a comma-separated string, so split and aggregate
     const skillsProgress = logs.reduce((acc, log) => {
-      log.skills.forEach(skill => {
-        acc[skill] = (acc[skill] || 0) + 1;
-      });
+      if (log.skills) {
+        log.skills.split(',').map(s => s.trim()).filter(Boolean).forEach(skill => {
+          acc[skill] = (acc[skill] || 0) + 1;
+        });
+      }
       return acc;
     }, {} as Record<string, number>);
 

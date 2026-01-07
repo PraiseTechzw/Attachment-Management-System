@@ -6,24 +6,28 @@ export async function POST(req: Request) {
 
     // In a real application, you would use a powerful LLM here.
     // For this example, we'll use a simple template-based approach.
-    const suggestion = `Based on your activity of **${prompt}**, here is a draft for your log entry:
+    const suggestion = `
+**Activity:** ${prompt}
 
-**Activities Performed:**
-- Investigated and resolved a critical bug related to **${prompt}**.
-- Collaborated with the team to identify the root cause.
-- Deployed a hotfix to production.
+**Detailed Description:**
+I engaged in [Action Verb] the [Noun Phrase] to [Objective]. This involved [Step 1], [Step 2], and [Step 3]. The primary goal was to [Overarching Goal].
 
-**Skills & Knowledge Gained:**
-- Advanced debugging techniques
-- Team collaboration
-- Version control (Git)
+**Skills & Knowledge Applied:**
+- **[Skill Category 1]:** Utilized [Specific Skill 1] to [Action].
+- **[Skill Category 2]:** Applied knowledge of [Specific Skill 2] to [Action].
+- **[Skill Category 3]:** Demonstrated proficiency in [Specific Skill 3] by [Action].
 
-**Challenges Encountered:**
-- The bug was difficult to reproduce, requiring creative problem-solving.
+**Challenges & Resolutions:**
+- **Challenge:** Encountered a [Challenge Description].
+- **Resolution:** Overcame this by [Solution Description]. This involved [Specific Action] and resulted in [Positive Outcome].
 
-**Solutions & Approaches:**
-- Implemented additional logging to trace the issue.
-- Used browser developer tools to inspect network requests.
+**Key Learnings & Takeaways:**
+- Gained a deeper understanding of [Concept or Technology].
+- Improved my ability to [Soft Skill].
+- Realized the importance of [Key Insight].
+
+**Impact:**
+The successful completion of this task resulted in [Positive Impact on the Project or Team].
 `
 
     return NextResponse.json({ suggestion })
